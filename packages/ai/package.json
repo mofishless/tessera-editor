@@ -1,0 +1,49 @@
+{
+  "name": "@tessera-editor/ai",
+  "version": "0.0.1",
+  "description": "Tessera AI interaction skeleton: AIRuntime, actions, triage",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@tessera-editor/core": "workspace:*",
+    "@tiptap/core": "^3.31.3",
+    "@tiptap/pm": "^3.31.3"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1",
+    "vitest": "^5.0.0"
+  },
+  "keywords": [
+    "ai",
+    "editor",
+    "llm",
+    "agent"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tessera-editor/tessera.git",
+    "directory": "packages/ai"
+  },
+  "homepage": "https://github.com/tessera-editor/tessera#readme",
+  "bugs": "https://github.com/tessera-editor/tessera/issues",
+  "sideEffects": false,
+  "module": "./dist/index.js"
+}

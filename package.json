@@ -1,0 +1,28 @@
+{
+  "name": "tessera",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Tessera — batteries-included rich-text editor component family (Slite-grade experience, AI-ready)",
+  "license": "MIT",
+  "packageManager": "pnpm@11.1.3",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @tessera-editor/playground dev",
+    "build": "pnpm -r --filter './packages/*' --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.0",
+    "vitepress": "^1.6.4"
+  }
+}

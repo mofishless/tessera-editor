@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "paths": {
+      "@tessera-editor/core": ["../core/src/index.ts"],
+      "@tessera-editor/ai": ["../ai/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

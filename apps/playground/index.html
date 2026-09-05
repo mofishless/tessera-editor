@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tessera Playground — M0 Spike</title>
+    <script>
+      window.__fatal = [];
+      window.addEventListener('error', function (e) {
+        window.__fatal.push(String(e.message).slice(0, 300));
+        document.title = 'ERR: ' + String(e.message).slice(0, 80);
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        window.__fatal.push('rej:' + String(e.reason).slice(0, 300));
+      });
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+{
+  "name": "@tessera-editor/ai-openai",
+  "version": "0.0.1",
+  "description": "Tessera AIRuntime adapter for OpenAI-compatible APIs (SSE)",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@tessera-editor/ai": "workspace:*"
+  },
+  "keywords": [
+    "ai",
+    "openai",
+    "llm",
+    "editor"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tessera-editor/tessera.git",
+    "directory": "packages/ai-openai"
+  },
+  "homepage": "https://github.com/tessera-editor/tessera#readme",
+  "bugs": "https://github.com/tessera-editor/tessera/issues",
+  "sideEffects": false,
+  "module": "./dist/index.js"
+}

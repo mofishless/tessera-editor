@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+*.local
+.env
+.env.*
+docs/.vitepress/cache/

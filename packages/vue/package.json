@@ -1,0 +1,58 @@
+{
+  "name": "@tessera-editor/vue",
+  "version": "0.0.1",
+  "description": "Tessera Vue 3 binding with the full default UI",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "typecheck": "vue-tsc --noEmit",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@tessera-editor/ai": "workspace:*",
+    "@tessera-editor/core": "workspace:*",
+    "@tiptap/core": "^3.31.3",
+    "@tiptap/extension-drag-handle": "^3.31.3",
+    "@tiptap/suggestion": "^3.31.3",
+    "@tiptap/vue-3": "^3.31.3"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.8",
+    "vite": "^7.3.6",
+    "vite-plugin-dts": "^5.1.0",
+    "vue": "^3.5.42",
+    "vue-tsc": "^3.0.0"
+  },
+  "keywords": [
+    "rich-text",
+    "editor",
+    "vue",
+    "tiptap",
+    "wysiwyg"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tessera-editor/tessera.git",
+    "directory": "packages/vue"
+  },
+  "homepage": "https://github.com/tessera-editor/tessera#readme",
+  "bugs": "https://github.com/tessera-editor/tessera/issues",
+  "sideEffects": false,
+  "module": "./dist/index.js"
+}

@@ -1,0 +1,46 @@
+{
+  "name": "@tessera-editor/ai-cli",
+  "version": "0.0.1",
+  "description": "Tessera AIRuntime adapter driving local CLI agents (Node)",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@tessera-editor/ai": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1"
+  },
+  "keywords": [
+    "ai",
+    "cli",
+    "agent",
+    "codex",
+    "editor"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tessera-editor/tessera.git",
+    "directory": "packages/ai-cli"
+  },
+  "homepage": "https://github.com/tessera-editor/tessera#readme",
+  "bugs": "https://github.com/tessera-editor/tessera/issues",
+  "sideEffects": false,
+  "module": "./dist/index.js"
+}

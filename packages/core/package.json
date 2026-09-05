@@ -1,0 +1,68 @@
+{
+  "name": "@tessera-editor/core",
+  "version": "0.0.1",
+  "description": "Tessera framework-agnostic editor core",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": {
+      "development": "./src/styles/tessera.css",
+      "default": "./dist/tessera.css"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@tiptap/core": "^3.31.3",
+    "@tiptap/extension-color": "^3.31.3",
+    "@tiptap/extension-highlight": "^3.31.3",
+    "@tiptap/extension-list": "^3.31.3",
+    "@tiptap/extension-table": "^3.31.3",
+    "@tiptap/extension-text-style": "^3.31.3",
+    "@tiptap/extension-unique-id": "^3.31.3",
+    "@tiptap/extensions": "^3.31.3",
+    "@tiptap/pm": "^3.31.3",
+    "@tiptap/starter-kit": "^3.31.3",
+    "@tiptap/suggestion": "^3.31.3",
+    "markdown-it": "^15.0.1",
+    "prosemirror-markdown": "^1.13.7",
+    "prosemirror-tables": "^1.8.5"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.2.0",
+    "jsdom": "^30.0.1",
+    "vitest": "^5.0.0"
+  },
+  "keywords": [
+    "rich-text",
+    "editor",
+    "tiptap",
+    "prosemirror",
+    "wysiwyg"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tessera-editor/tessera.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/tessera-editor/tessera#readme",
+  "bugs": "https://github.com/tessera-editor/tessera/issues",
+  "sideEffects": [
+    "*.css"
+  ],
+  "module": "./dist/index.js"
+}

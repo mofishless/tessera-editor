@@ -1,0 +1,250 @@
+/* Playground page scaffolding only — editor chrome lives in
+   @tessera-editor/react/styles.css (imported by the component itself). */
+
+:root {
+  --pg-accent: #4f6df5;
+  --pg-text: #262629;
+  --pg-soft: #6b6f76;
+  --pg-border: #e6e8eb;
+  --pg-bg: #f7f7f8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  background: var(--pg-bg);
+  color: var(--pg-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 28px 24px 110px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 8px 16px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--pg-accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.logo-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.sub {
+  color: var(--pg-soft);
+  font-size: 13px;
+  flex: 1;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.header-actions button,
+.header-actions select,
+.md-tools button {
+  appearance: none;
+  border: 1px solid var(--pg-border);
+  background: #fff;
+  border-radius: 8px;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--pg-text);
+}
+
+.ai-config {
+  display: flex;
+  gap: 8px;
+  padding: 0 8px 16px;
+  align-items: center;
+}
+
+.ai-config input {
+  height: 30px;
+  border: 1px solid var(--pg-border);
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 13px;
+  outline: none;
+  background: #fff;
+}
+
+.ai-config input:nth-child(1) {
+  width: 260px;
+}
+.ai-config input:nth-child(2) {
+  width: 160px;
+}
+.ai-config input:nth-child(3) {
+  width: 240px;
+}
+
+.hint-text {
+  font-size: 12px;
+  color: #9aa0a8;
+}
+
+.page-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .page-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.doc-card {
+  background: #fff;
+  border: 1px solid var(--pg-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(20, 22, 26, 0.04), 0 8px 24px rgba(20, 22, 26, 0.05);
+  padding: 44px 56px 72px;
+}
+
+.checklist {
+  background: #fff;
+  border: 1px solid var(--pg-border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  font-size: 13px;
+  position: sticky;
+  top: 20px;
+}
+
+.checklist h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pg-soft);
+}
+
+.checklist ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  color: var(--pg-soft);
+  line-height: 1.5;
+}
+
+.checklist code {
+  background: var(--pg-bg);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.md-tools {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.checklist .meta {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--pg-border);
+  color: #9aa0a8;
+  font-size: 12px;
+}
+
+.md-drawer {
+  position: fixed;
+  inset: auto 24px 24px 24px;
+  max-width: 860px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid var(--pg-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(20, 22, 26, 0.16);
+  padding: 14px 16px;
+  z-index: 90;
+}
+
+.md-drawer-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  padding-bottom: 10px;
+}
+
+.md-drawer-head button {
+  border: none;
+  background: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #9aa0a8;
+}
+
+.md-drawer textarea {
+  width: 100%;
+  height: 220px;
+  border: 1px solid var(--pg-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  outline: none;
+  resize: vertical;
+}
+
+.md-drawer .apply {
+  margin-top: 10px;
+  border: none;
+  background: var(--pg-accent);
+  color: #fff;
+  border-radius: 8px;
+  height: 32px;
+  padding: 0 18px;
+  font-size: 13px;
+  cursor: pointer;
+}
