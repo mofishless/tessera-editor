@@ -1,6 +1,6 @@
 {
   "name": "@tessera-editor/ai",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Tessera AI interaction skeleton: AIRuntime, actions, triage",
   "license": "MIT",
   "type": "module",

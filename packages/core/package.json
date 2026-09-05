@@ -1,6 +1,6 @@
 {
   "name": "@tessera-editor/core",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Tessera framework-agnostic editor core",
   "license": "MIT",
   "type": "module",
