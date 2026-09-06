@@ -1,7 +1,8 @@
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react'
 import type { NodeViewProps } from '@tiptap/react'
 import { ImageBlock } from '@tessera-editor/core'
-import { useContext, useRef } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { TesseraContext } from './context'
 
 /**
@@ -23,6 +24,16 @@ function AiImageNodeView({ node, updateAttributes, selected, decorations }: Node
   })()
   const { t } = useContext(TesseraContext)!
   const imgRef = useRef<HTMLImageElement>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!preview) return
+    const close = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPreview(null)
+    }
+    window.addEventListener('keydown', close)
+    return () => window.removeEventListener('keydown', close)
+  }, [preview])
   const { src, alt, width, align } = node.attrs as {
     src: string
     alt: string | null
@@ -65,9 +76,27 @@ function AiImageNodeView({ node, updateAttributes, selected, decorations }: Node
       data-gallery-size={galleryAttrs?.['data-gallery-size']}
     >
       <div className="tessera-image-frame" style={width ? { width: `${width}px` } : undefined}>
-        <img ref={imgRef} src={src} alt={alt ?? ''} draggable={false} />
+        <img
+          ref={imgRef}
+          src={src}
+          alt={alt ?? ''}
+          draggable={false}
+          style={{ cursor: 'zoom-in' }}
+          onClick={e => {
+            e.stopPropagation()
+            setPreview(src)
+          }}
+        />
         <div className="tessera-image-resize" onPointerDown={startResize} title="↔" />
       </div>
+      {preview
+        ? createPortal(
+            <div className="tessera-lightbox" onClick={() => setPreview(null)}>
+              <img src={preview} alt={alt ?? ''} />
+            </div>,
+            document.body,
+          )
+        : null}
       <div className="tessera-image-align">
         <button type="button" title={t('imageAlignLeft')} data-on={align === 'left'} onClick={() => updateAttributes({ align: 'left' })}>
           ⭰

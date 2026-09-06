@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { NodeViewWrapper } from '@tiptap/vue-3'
 import type { NodeViewProps } from '@tiptap/vue-3'
 import { useTesseraContext } from '../context'
@@ -7,6 +7,15 @@ import { useTesseraContext } from '../context'
 const props = defineProps<NodeViewProps>()
 const { t } = useTesseraContext()
 const imgRef = ref<HTMLImageElement | null>(null)
+const preview = ref<string | null>(null)
+
+function onPreviewKey(e: KeyboardEvent) {
+  if (e.key === 'Escape') preview.value = null
+}
+watch(preview, v => {
+  if (v) window.addEventListener('keydown', onPreviewKey)
+  else window.removeEventListener('keydown', onPreviewKey)
+})
 
 function startResize(event: PointerEvent) {
   event.preventDefault()
@@ -49,7 +58,14 @@ const galleryAttrs = computed(() => {
     :data-gallery-size="galleryAttrs?.['data-gallery-size']"
   >
     <div class="tessera-image-frame" :style="node.attrs.width ? { width: `${node.attrs.width}px` } : undefined">
-      <img ref="imgRef" :src="node.attrs.src" :alt="node.attrs.alt ?? ''" draggable="false" />
+      <img
+        ref="imgRef"
+        :src="node.attrs.src"
+        :alt="node.attrs.alt ?? ''"
+        draggable="false"
+        style="cursor: zoom-in"
+        @click.stop="preview = node.attrs.src"
+      />
       <div class="tessera-image-resize" title="↔" @pointerdown="startResize" />
     </div>
     <div class="tessera-image-align">
@@ -58,4 +74,9 @@ const galleryAttrs = computed(() => {
       <button type="button" :title="t('imageAlignFull')" :data-on="align() === 'full'" @click="updateAttributes({ align: 'full' })">⭥</button>
     </div>
   </NodeViewWrapper>
+  <Teleport to="body">
+    <div v-if="preview" class="tessera-lightbox" @click="preview = null">
+      <img :src="preview" :alt="node.attrs.alt ?? ''" />
+    </div>
+  </Teleport>
 </template>
