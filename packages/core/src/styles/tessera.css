@@ -68,7 +68,9 @@
   padding-left: 1.5em;
   margin: 0.35em 0;
 }
-.tessera-doc li > p {
+/* descendant on purpose: taskItem wraps content as li > div > p, where the
+   UA's default p margin would otherwise push text below the checkbox */
+.tessera-doc li p {
   margin: 0.1em 0;
 }
 
@@ -140,7 +142,11 @@
   align-items: flex-start;
 }
 .tessera-doc ul[data-type='taskList'] li > label {
-  margin-top: 0.45em;
+  /* flex + one-line-box height centers the checkbox on the first text line */
+  display: flex;
+  align-items: center;
+  height: 1.72em;
+  margin-top: 0.1em;
   flex: none;
   user-select: none;
 }

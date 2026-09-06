@@ -103,7 +103,14 @@ async function uploadAndInsert(file: File) {
 
 onMounted(() => {
   const ed = new Editor({
-    extensions: [...buildExtensions(), DragHandle],
+    extensions: [
+      ...buildExtensions(),
+      // 'left' (vertical center) instead of the default 'left-start': the
+      // handle must sit mid-row like Slite, not above multi-line blocks
+      DragHandle.configure({
+        computePositionConfig: { placement: 'left', strategy: 'absolute' },
+      }),
+    ],
     content: props.content as never,
     onUpdate: ({ editor: e }) => emit('update', e),
     onCreate: ({ editor: e }) => emit('create', e),

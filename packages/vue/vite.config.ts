@@ -9,7 +9,14 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   plugins: [
     vue(),
-    dts({ tsconfigPath: path.resolve(here, 'tsconfig.json'), rollupTypes: true, clean: true }),
+    // rollupTypes cannot bundle .vue SFC declarations (silently emits nothing
+    // at dist/index.d.ts); raw emission with entryRoot lands index.d.ts at
+    // dist/ where the package "types" export points
+    dts({
+      tsconfigPath: path.resolve(here, 'tsconfig.json'),
+      entryRoot: path.resolve(here, 'src'),
+      clean: true,
+    }),
   ],
   build: {
     lib: {

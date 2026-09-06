@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "types": ["vite/client"],
+    "customConditions": ["development"],
     "noUnusedLocals": false
   },
   "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts"]

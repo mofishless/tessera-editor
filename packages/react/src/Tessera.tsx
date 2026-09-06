@@ -194,7 +194,13 @@ export function Tessera({
     <TesseraContext.Provider value={{ editor, locale, t, ai }}>
       <div className="tessera-root">
         <EditorContent editor={editor} />
-        <DragHandle editor={editor} pluginKey="tesseraDragHandle">
+        {/* 'left' (vertical center) instead of the default 'left-start': the
+            handle must sit mid-row like Slite, not above multi-line blocks */}
+        <DragHandle
+          editor={editor}
+          pluginKey="tesseraDragHandle"
+          computePositionConfig={{ placement: 'left', strategy: 'absolute' }}
+        >
           <div className="tessera-drag-handle">⠿</div>
         </DragHandle>
         <EmptyLineToolbar />
