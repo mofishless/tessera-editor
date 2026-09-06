@@ -37,6 +37,8 @@
   font-size: 16px;
   line-height: 1.72;
   min-height: 40vh;
+  max-width: var(--te-doc-max-width, none);
+  margin-inline: auto;
   color: var(--te-text);
   caret-color: var(--te-accent);
 }
@@ -780,6 +782,64 @@
   padding: 2px;
 }
 
+/* ---------- v1.1 additions: gallery / emoji picker ---------- */
+
+/* image gallery: runs of consecutive image blocks flagged by the
+   tesseraGallery extension lay out three per row. The layout applies to
+   the .react-renderer wrapper (TipTap's node DOM); :has() bridges the
+   wrapper to the flagged inner NodeView. */
+.tessera-doc .react-renderer.node-imageBlock:has(> .tessera-image[data-gallery]) {
+  display: inline-block;
+  width: calc(33.333% - 8px);
+  vertical-align: top;
+  margin: 0 4px 8px 0;
+}
+.tessera-doc .react-renderer.node-imageBlock:has(> .tessera-image[data-gallery]) .tessera-image {
+  display: block;
+  width: 100%;
+}
+.tessera-doc .react-renderer.node-imageBlock:has(> .tessera-image[data-gallery]) .tessera-image-frame {
+  width: 100% !important;
+}
+/* per-image chrome is hidden in gallery mode (controls would overlap) */
+.tessera-doc .react-renderer.node-imageBlock:has(> .tessera-image[data-gallery]) .tessera-image-align,
+.tessera-doc .react-renderer.node-imageBlock:has(> .tessera-image[data-gallery]) .tessera-image-resize {
+  display: none;
+}
+
+/* emoji picker popup (`:` trigger) */
+.tessera-emoji-menu {
+  position: fixed;
+  display: grid;
+  grid-template-columns: repeat(8, 34px);
+  gap: 2px;
+  background: var(--te-bg);
+  border: 1px solid var(--te-border);
+  border-radius: 10px;
+  box-shadow: var(--te-shadow-pop);
+  padding: 6px;
+  max-height: 264px;
+  overflow-y: auto;
+  z-index: 80;
+  font-family: var(--te-font);
+}
+.tessera-emoji-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  font-size: 20px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.tessera-emoji-item:hover,
+.tessera-emoji-item[data-selected='true'] {
+  background: var(--te-bg-hover);
+}
+
 /* ---------- v1.1: tables ---------- */
 
 .tessera-doc table {
@@ -1347,13 +1407,50 @@
   font-family: var(--te-font);
 }
 .tessera-root[data-tessera-theme='dark'] {
-  --te-text: #e8e8ea;
-  --te-text-soft: #a8adb5;
-  --te-text-faint: #7a7f88;
+  --te-accent: #6c85ff;
+  --te-ai: #a184f0;
+  --te-text: #e6e7ea;
+  --te-text-soft: #a4a9b3;
+  --te-text-faint: #6f7580;
   --te-border: #33363d;
-  --te-bg: #1e2025;
-  --te-bg-soft: #26282e;
-  --te-bg-hover: #2d3037;
+  --te-bg: #1b1d22;
+  --te-bg-soft: #24262c;
+  --te-bg-hover: #2c2f37;
+  --te-shadow-pop: 0 2px 6px rgba(0, 0, 0, 0.4), 0 12px 28px rgba(0, 0, 0, 0.5);
+}
+
+/* dark palette component overrides (surfaces with fixed light colors) */
+.tessera-root[data-tessera-theme='dark'] .tessera-doc ::selection {
+  background: #2e3a6e;
+}
+.tessera-root[data-tessera-theme='dark'] .tessera-doc h4 {
+  color: #c9cdd4;
+}
+.tessera-root[data-tessera-theme='dark'] .tessera-tb-btn {
+  color: #c9cdd4;
+}
+.tessera-root[data-tessera-theme='dark'] .tessera-doc div[data-type='hint'][data-variant='info'] {
+  background: #232c47;
+  border-color: #35406a;
+}
+.tessera-root[data-tessera-theme='dark'] .tessera-doc div[data-type='hint'][data-variant='success'] {
+  background: #1d3128;
+  border-color: #2c4a3b;
+}
+.tessera-root[data-tessera-theme='dark'] .tessera-doc div[data-type='hint'][data-variant='warning'] {
+  background: #33291a;
+  border-color: #4d3d24;
+}
+.tessera-root[data-tessera-theme='dark'] .tessera-doc div[data-type='hint'][data-variant='danger'] {
+  background: #381d20;
+  border-color: #55292d;
+}
+.tessera-root[data-tessera-theme='dark'] .tessera-doc div[data-type='hint'][data-variant='neutral'] {
+  background: #26282e;
+  border-color: #33363d;
+}
+.tessera-root[data-tessera-theme='dark'] .tessera-doc div[data-type='collapsible'] {
+  background: #212329;
 }
 
 /* dark theme hook (host sets data-tessera-theme="dark" on .tessera-root) */

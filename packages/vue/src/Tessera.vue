@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import { DragHandle } from '@tiptap/extension-drag-handle'
+import { createEmojiRenderer } from './emojiRenderer'
 import {
   createTesseraExtensions,
   createTesseraT,
@@ -44,6 +45,8 @@ const props = withDefaults(
     identity?: IdentityService
     ai?: AIRuntime
     historyIdleMs?: number
+  /** v1.1: document column max-width in px. */
+  docWidth?: number
   }>(),
   { locale: 'zh-CN' },
 )
@@ -54,6 +57,10 @@ const emit = defineEmits<{
 }>()
 
 const t = computed(() => createTesseraT(props.locale))
+
+const docWidthStyle = computed(() =>
+  props.docWidth ? ({ '--te-doc-max-width': `${props.docWidth}px` }) : undefined,
+)
 const editor = shallowRef<Editor | null>(null)
 const session = ref<SuggestionSession | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -104,9 +111,16 @@ async function uploadAndInsert(file: File) {
 onMounted(() => {
   const ed = new Editor({
     extensions: [
-      ...buildExtensions(),
+      ...buildExtensions().map(ext =>
+        ext.name === 'tesseraEmojiMenu'
+          ? (ext as unknown as { configure: (o: { render: unknown }) => typeof ext }).configure({
+              render: createEmojiRenderer(),
+            })
+          : ext,
+      ),
       // 'left' (vertical center) instead of the default 'left-start': the
-      // handle must sit mid-row like Slite, not above multi-line blocks
+      // handle must sit mid-row like Slite, not above multi-line blocks.
+      // nested: hovering a list item targets that item (Slite-style).
       DragHandle.configure({
         computePositionConfig: { placement: 'left', strategy: 'absolute' },
       }),

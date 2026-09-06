@@ -19,8 +19,12 @@ import { TesseraInputRules } from './extensions/input-rules'
 import { TesseraShortcuts } from './extensions/shortcuts'
 import { TesseraFindReplace } from './extensions/find-replace'
 import { SlashMenu } from './extensions/slash'
+import { EmojiMenu } from './extensions/emoji'
 import { TesseraHistory } from './extensions/history'
 import { BlockContextMenu } from './extensions/context-menu'
+import { TesseraGallery } from './extensions/gallery'
+import { TesseraMetrics } from './extensions/metrics'
+import { TesseraWordPaste } from './extensions/word-paste'
 import { TesseraServices } from './services'
 import { createTesseraT, type TesseraLocale } from './i18n'
 
@@ -104,6 +108,10 @@ export function createTesseraExtensions(options: TesseraPresetOptions = {}): Ext
     TesseraHistory.configure({ idleMs: options.historyIdleMs }),
     BlockContextMenu,
     SlashMenu.configure({ locale: options.locale ?? 'zh-CN' }),
+    EmojiMenu,
+    TesseraGallery,
+    TesseraMetrics,
+    TesseraWordPaste,
     TesseraServices,
   ]
 }

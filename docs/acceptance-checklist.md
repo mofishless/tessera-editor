@@ -37,7 +37,7 @@
 | `~text~` | 删除线 | ✅（StarterKit） |
 | `` `code` `` | 行内代码 | ✅（StarterKit） |
 | `::highlight::` | 高亮 | ✅（自实现 markInputRule） |
-| `:` | emoji 选择器 | ⏳ v1.1 |
+| `:` | emoji 选择器 | ✅ v1.1（过滤 + 键盘/点击插入） |
 
 - [x] **中文/日文 IME 硬门槛**：composition 期间触发符不误发、UI 不闪烁 ✅（M0 实测 + 全 UI 组件 composition 守卫）
 
@@ -73,15 +73,15 @@
 ## 5. 块操作
 
 - [x] 四点手柄：悬停块左侧吸附、按住拖拽排序 ✅（M0 实测 H1 0→6 位）
-- [x] 手柄菜单：Copy anchor link、Copy block id、删除 ⏳（手柄存在 + 拖拽 ✅；菜单 v1.1）
+- [x] 手柄菜单：Copy anchor link、Copy block id、删除 ✅（点击手柄/右键均可唤出）
 - [x] **空行工具栏**：光标空行浮现 + `›` 展开全部块 ✅
-- [x] 文档级布局 API：页宽配置 ⏳（v1.1）
+- [x] 文档级布局 API：页宽配置 ✅（docWidth prop → --te-doc-max-width）
 
 ## 6. 图片与附件（M1：图片）
 
 - [x] 粘贴/拖拽/文件选择三入口，经注入 UploadService ✅
 - [x] NodeView 悬停调宽 + 左/中/全宽对齐 ✅（代码就位，交互待浏览器复验）
-- [ ] 多图成画廊（每行 3 张）⏳ v1.1
+- [x] 多图成画廊（每行 3 张）✅（tesseraGallery 装饰 + CSS，格式不变）
 
 ## 7. 撤销/重做与 AI 归因（M1/M2）
 
@@ -92,13 +92,13 @@
 
 ## 8. 长文档性能
 
-- [ ] 架构预留惰性渲染/虚拟化；量化指标 ⏳（NodeView 结构已就位，专项 v1.1）
+- [x] 性能量化指标 ✅（getTesseraMetrics：块/词/图表数量 + serializeMs；虚拟化渲染专项仍预留）
 
 ## 9. 复制粘贴保真（M1 起作为正式需求）
 
 - [x] 外部粘贴：纯文本/HTML 走 PM 默认清洗；图片粘贴上传 ✅
 - [x] Copy as Markdown（选中范围）✅
-- [ ] Word 源专项清洗规则表 ⏳ v1.1
+- [x] Word 源专项清洗规则表 ✅（R1–R7 规则 + 表驱动单测）
 
 ## 10. i18n 与主题
 

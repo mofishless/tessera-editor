@@ -10,7 +10,17 @@ import { TesseraContext } from './context'
  * paste/drop/picker); this view only mutates node attributes.
  */
 
-function AiImageNodeView({ node, updateAttributes, selected }: NodeViewProps) {
+function AiImageNodeView({ node, updateAttributes, selected, decorations }: NodeViewProps) {
+  console.log('[imgview] decorations:', Array.isArray(decorations), decorations?.length)
+  const galleryAttrs = (() => {
+    for (const deco of decorations ?? []) {
+      const attrs = (deco as unknown as { type?: { attrs?: Record<string, string> } }).type?.attrs
+      if (attrs && 'data-gallery' in attrs) {
+        return attrs
+      }
+    }
+    return null
+  })()
   const { t } = useContext(TesseraContext)!
   const imgRef = useRef<HTMLImageElement>(null)
   const { src, alt, width, align } = node.attrs as {
@@ -46,7 +56,14 @@ function AiImageNodeView({ node, updateAttributes, selected }: NodeViewProps) {
   }
 
   return (
-    <NodeViewWrapper className="tessera-image" data-align={align} data-selected={selected}>
+    <NodeViewWrapper
+      className="tessera-image"
+      data-align={align}
+      data-selected={selected}
+      data-gallery={galleryAttrs ? 'true' : undefined}
+      data-gallery-index={galleryAttrs?.['data-gallery-index']}
+      data-gallery-size={galleryAttrs?.['data-gallery-size']}
+    >
       <div className="tessera-image-frame" style={width ? { width: `${width}px` } : undefined}>
         <img ref={imgRef} src={src} alt={alt ?? ''} draggable={false} />
         <div className="tessera-image-resize" onPointerDown={startResize} title="↔" />

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import type { Editor } from '@tiptap/react'
 import type { Content, EditorOptions } from '@tiptap/core'
@@ -20,6 +21,7 @@ import { ImageBlockView } from './ImageNodeView'
 import { AiTableCellViewExtension, AiTableHeaderViewExtension } from './TableNodeViews'
 import { EmbedBlockView, TocBlockView } from './EmbedTocViews'
 import { createSlashRenderer } from './SlashMenu'
+import { createEmojiRenderer } from './EmojiMenu'
 import { EmptyLineToolbar } from './EmptyLineToolbar'
 import { SelectionToolbar } from './SelectionToolbar'
 import { FindReplacePanel, AskPanel, SuggestionBar } from './Panels'
@@ -45,6 +47,8 @@ export interface TesseraProps {
   ai?: AIRuntime
   /** v1.1: idle window for history auto-capture (playground uses short ones) */
   historyIdleMs?: number
+  /** v1.1: document column max-width in px (Slite-style centered column). */
+  docWidth?: number
   onUpdate?: (editor: Editor) => void
   onCreate?: (editor: Editor) => void
 }
@@ -57,6 +61,10 @@ export interface TesseraProps {
 
 /** Stable reference is required: see the DragHandle usage comment below. */
 const DRAG_HANDLE_POSITION_CONFIG = { placement: 'left', strategy: 'absolute' } as const
+// NOTE: DragHandle `nested` mode (per-item list dragging) was evaluated and
+// deferred — with nested rules active the handle stopped appearing on plain
+// hover in smoke checks. Revisit with:
+//   nested={{ edgeDetection: 'left', allowedContainers: ['bulletList', 'orderedList', 'taskList'] }}
 export function Tessera({
   content,
   locale = 'zh-CN',
@@ -66,12 +74,21 @@ export function Tessera({
   identity,
   ai: runtime,
   historyIdleMs,
+  docWidth,
   onUpdate,
   onCreate,
 }: TesseraProps) {
   const t = useMemo(() => createTesseraT(locale), [locale])
   const [session, setSession] = useState<SuggestionSession | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  type DragNodeData = {
+    node: { attrs: Record<string, unknown>; type: { name: string } } | null
+    pos: number
+  }
+  const dragNodeRef = useRef<DragNodeData | null>(null)
+  const handleDragNodeChange = useCallback((data: DragNodeData) => {
+    dragNodeRef.current = data.node ? data : null
+  }, [])
 
   // Everything handed to useEditor must be referentially stable: an unstable
   // option (any inline callback) makes @tiptap/react call editor.setOptions
@@ -100,6 +117,9 @@ export function Tessera({
               return rt ? aiSlashItems({ editor: ctx.editor, runtime: rt, t: ctx.t }) : []
             },
           })
+        }
+        if (ext.name === 'tesseraEmojiMenu') {
+          return ext.configure({ render: createEmojiRenderer() })
         }
         if (ext.name === 'imageBlock') {
           return ImageBlockView
@@ -227,7 +247,10 @@ export function Tessera({
 
   return (
     <TesseraContext.Provider value={{ editor, locale, t, ai }}>
-      <div className="tessera-root">
+      <div
+        className="tessera-root"
+        style={{ '--te-doc-max-width': docWidth ? `${docWidth}px` : undefined } as CSSProperties}
+      >
         <EditorContent editor={editor} />
         {/* 'left' (vertical center) instead of the default 'left-start': the
             handle must sit mid-row like Slite, not above multi-line blocks.
@@ -239,8 +262,31 @@ export function Tessera({
           editor={editor}
           pluginKey="tesseraDragHandle"
           computePositionConfig={DRAG_HANDLE_POSITION_CONFIG}
+          onNodeChange={handleDragNodeChange}
         >
-          <div className="tessera-drag-handle">⠿</div>
+          <div
+            className="tessera-drag-handle"
+            onClick={event => {
+              // handle click opens the block menu (drag still reorders);
+              // context menu UI selects the block and positions at pointer
+              const data = dragNodeRef.current
+              if (!data?.node) {
+                return
+              }
+              const id = (data.node.attrs as { id?: string }).id
+              if (!id) {
+                return
+              }
+              editor.emit('tessera:blockMenu', {
+                blockId: id,
+                blockType: data.node.type.name,
+                clientX: event.clientX,
+                clientY: event.clientY,
+              } as never)
+            }}
+          >
+            ⠿
+          </div>
         </DragHandle>
         <EmptyLineToolbar />
         <SelectionToolbar onSession={setSession} />

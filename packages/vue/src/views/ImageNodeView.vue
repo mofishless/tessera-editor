@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { NodeViewWrapper } from '@tiptap/vue-3'
 import type { NodeViewProps } from '@tiptap/vue-3'
 import { useTesseraContext } from '../context'
@@ -26,10 +26,28 @@ function startResize(event: PointerEvent) {
 }
 
 const align = () => String(props.node.attrs.align ?? 'center')
+
+// gallery membership comes from the tesseraGallery decoration attrs
+const galleryAttrs = computed(() => {
+  for (const deco of props.decorations ?? []) {
+    const attrs = (deco as unknown as { type?: { attrs?: Record<string, string> } }).type?.attrs
+    if (attrs && 'data-gallery' in attrs) {
+      return attrs
+    }
+  }
+  return null
+})
 </script>
 
 <template>
-  <NodeViewWrapper class="tessera-image" :data-align="align()" :data-selected="selected">
+  <NodeViewWrapper
+    class="tessera-image"
+    :data-align="align()"
+    :data-selected="selected"
+    :data-gallery="galleryAttrs ? 'true' : undefined"
+    :data-gallery-index="galleryAttrs?.['data-gallery-index']"
+    :data-gallery-size="galleryAttrs?.['data-gallery-size']"
+  >
     <div class="tessera-image-frame" :style="node.attrs.width ? { width: `${node.attrs.width}px` } : undefined">
       <img ref="imgRef" :src="node.attrs.src" :alt="node.attrs.alt ?? ''" draggable="false" />
       <div class="tessera-image-resize" title="↔" @pointerdown="startResize" />
