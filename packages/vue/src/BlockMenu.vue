@@ -2,8 +2,10 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { tableToCsvAt } from '@tessera-editor/core'
 import { useTesseraContext } from './context'
+import { useTesseraPortalRoot } from './portal'
 
 const { editor, t } = useTesseraContext()
+const portalRoot = useTesseraPortalRoot(editor)
 const menu = ref<{ blockId: string; blockType: string; clientX: number; clientY: number } | null>(null)
 
 function findBlockPosById(id: string): number | null {
@@ -73,7 +75,7 @@ const menuStyle = computed(() => {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport v-if="portalRoot" :to="portalRoot">
     <div v-if="menu" class="tessera-block-menu" :style="menuStyle" @mousedown.stop>
       <template v-if="menu.blockType === 'table' || menu.blockType === 'tableRow'">
         <div class="tessera-menu-label">{{ t('rowMenuTitle') }}</div>

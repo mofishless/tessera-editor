@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { tableToCsvAt } from '@tessera-editor/core'
 import { TesseraContext } from './context'
+import { useTesseraPortalRoot } from './portal'
 
 /**
  * Block context menu (v1.1): right-click a block → 复制锚链接 / 复制块 ID /
@@ -18,6 +19,7 @@ interface BlockMenuState {
 export function BlockContextMenuUI() {
   const { editor, t } = useContext(TesseraContext)!
   const [menu, setMenu] = useState<BlockMenuState | null>(null)
+  const portalRoot = useTesseraPortalRoot(editor)
 
   useEffect(() => {
     const onMenu = (payload: BlockMenuState) => {
@@ -39,7 +41,7 @@ export function BlockContextMenuUI() {
     }
   }, [editor])
 
-  if (!menu) {
+  if (!menu || !portalRoot) {
     return null
   }
 
@@ -76,7 +78,7 @@ export function BlockContextMenuUI() {
         {t('menuDeleteBlock')}
       </MenuItem>
     </div>,
-    document.body,
+    portalRoot,
   )
 }
 

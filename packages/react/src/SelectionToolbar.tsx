@@ -5,6 +5,7 @@ import { docToMarkdown } from '@tessera-editor/core'
 import { IMPROVE_PRESETS, improveSelection } from '@tessera-editor/ai'
 import type { SuggestionSession } from '@tessera-editor/ai'
 import { TesseraContext } from './context'
+import { useTesseraPortalRoot } from './portal'
 import { CommentComposer } from './CommentPanel'
 
 /**
@@ -23,6 +24,7 @@ export function SelectionToolbar({ onSession }: { onSession: (session: Suggestio
   const [popover, setPopover] = useState<PopoverKind>(null)
   const [linkValue, setLinkValue] = useState('')
   const composingRef = useRef(false)
+  const portalRoot = useTesseraPortalRoot(editor)
 
   const reposition = useCallback(() => {
     if (composingRef.current || !editor.isFocused) {
@@ -92,7 +94,7 @@ export function SelectionToolbar({ onSession }: { onSession: (session: Suggestio
 
   const chain = () => editor.chain().focus()
 
-  if (!style) {
+  if (!style || !portalRoot) {
     return null
   }
 
@@ -226,7 +228,7 @@ export function SelectionToolbar({ onSession }: { onSession: (session: Suggestio
       {popover === 'improve' ? <ImprovePopover onSession={onSession} onClose={() => setPopover(null)} /> : null}
       {popover === 'comment' ? <CommentComposer onClose={() => setPopover(null)} /> : null}
     </div>,
-    document.body,
+    portalRoot,
   )
 }
 

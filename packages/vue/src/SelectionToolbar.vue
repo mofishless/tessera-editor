@@ -4,11 +4,13 @@ import { docToMarkdown } from '@tessera-editor/core'
 import { IMPROVE_PRESETS, improveSelection } from '@tessera-editor/ai'
 import type { SuggestionSession } from '@tessera-editor/ai'
 import { useTesseraContext } from './context'
+import { useTesseraPortalRoot } from './portal'
 import CommentComposer from './CommentComposer.vue'
 
 const emit = defineEmits<{ (e: 'session', s: SuggestionSession | null): void }>()
 
 const { editor, t, locale, ai } = useTesseraContext()
+const portalRoot = useTesseraPortalRoot(editor)
 const style = ref<{ top: string; left: string } | null>(null)
 const popover = ref<null | 'color' | 'highlight' | 'link' | 'improve' | 'more' | 'comment'>(null)
 const linkValue = ref('')
@@ -124,7 +126,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport v-if="portalRoot" :to="portalRoot">
     <div
       v-if="style"
       class="tessera-selection-toolbar"

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { getCommentStore, getIdentityService, listCommentRanges } from '@tessera-editor/core'
 import type { CommentThread } from '@tessera-editor/core'
 import { TesseraContext } from './context'
+import { useTesseraPortalRoot } from './portal'
 
 /**
  * Inline comments (v1.1): comment composer on selection (⌘⌥M or the 💬
@@ -135,6 +136,7 @@ export function CommentPanel() {
 export function CommentComposer({ onClose }: { onClose: () => void }) {
   const { editor, t } = useContext(TesseraContext)!
   const [text, setText] = useState('')
+  const portalRoot = useTesseraPortalRoot(editor)
   const quote = editor.state.doc.textBetween(editor.state.selection.from, editor.state.selection.to, ' ')
 
   const submit = async () => {
@@ -160,6 +162,10 @@ export function CommentComposer({ onClose }: { onClose: () => void }) {
     editor.emit('tessera:commentPanel', {})
   }
 
+  if (!portalRoot) {
+    return null
+  }
+
   return createPortal(
     <div className="tessera-popover tessera-comment-composer" data-testid="comment-composer">
       <div className="tessera-thread-quote">“{quote.slice(0, 60)}{quote.length > 60 ? '…' : ''}”</div>
@@ -181,6 +187,6 @@ export function CommentComposer({ onClose }: { onClose: () => void }) {
         </button>
       </div>
     </div>,
-    document.body,
+    portalRoot,
   )
 }

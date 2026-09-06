@@ -6,6 +6,7 @@ import type { SlashMenuItem, TesseraTranslator } from '@tessera-editor/core'
 import { aiSlashItems } from '@tessera-editor/ai'
 import type { Editor } from '@tiptap/react'
 import { TesseraContext } from './context'
+import { useTesseraPortalRoot } from './portal'
 
 /**
  * Slite-style empty-line toolbar (acceptance §5): appears when the caret sits
@@ -31,6 +32,14 @@ export function EmptyLineToolbar() {
   const [style, setStyle] = useState<CSSProperties | null>(null)
   const [expanded, setExpanded] = useState(false)
   const composingRef = useRef(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const portalRoot = useTesseraPortalRoot(editor)
+
+  const hideAll = useCallback(() => {
+    setStyle(null)
+    setExpanded(false)
+    editor.view.dom.removeAttribute('data-toolbar-line')
+  }, [editor])
 
   const reposition = useCallback(() => {
     const dom = editor.view.dom
@@ -49,6 +58,16 @@ export function EmptyLineToolbar() {
       return
     }
     const coords = editor.view.coordsAtPos($from.pos)
+    // the toolbar is glued to the anchor line; once that line leaves the
+    // visible part of the editor (inner scroll or page scroll) it must go
+    const viewRect = dom.getBoundingClientRect()
+    if (
+      coords.top < Math.max(viewRect.top, 0) - 2 ||
+      coords.top > Math.min(viewRect.bottom, window.innerHeight) + 2
+    ) {
+      hideAll()
+      return
+    }
     setStyle({
       position: 'fixed',
       // Slite behavior: the toolbar OCCUPIES the empty line instead of
@@ -58,7 +77,7 @@ export function EmptyLineToolbar() {
     })
     // hide the placeholder text while the toolbar owns this line
     dom.setAttribute('data-toolbar-line', 'true')
-  }, [editor])
+  }, [editor, hideAll])
 
   useEffect(() => {
     const hide = () => {
@@ -73,6 +92,16 @@ export function EmptyLineToolbar() {
       composingRef.current = false
       requestAnimationFrame(reposition)
     }
+    // scroll inside our own panel (its scrollbar) must not close the menu;
+    // any other scroll keeps the toolbar glued to the anchor line via
+    // reposition (which hides it once the line leaves the viewport)
+    const onScroll = (event: Event) => {
+      const node = rootRef.current
+      if (node && event.target instanceof Node && node.contains(event.target)) {
+        return
+      }
+      requestAnimationFrame(reposition)
+    }
 
     const dom = editor.view.dom
     editor.on('selectionUpdate', reposition)
@@ -80,18 +109,18 @@ export function EmptyLineToolbar() {
     editor.on('blur', hide)
     dom.addEventListener('compositionstart', onCompositionStart)
     dom.addEventListener('compositionend', onCompositionEnd)
-    window.addEventListener('scroll', hide, true)
+    window.addEventListener('scroll', onScroll, true)
     return () => {
       editor.off('selectionUpdate', reposition)
       editor.off('focus', reposition)
       editor.off('blur', hide)
       dom.removeEventListener('compositionstart', onCompositionStart)
       dom.removeEventListener('compositionend', onCompositionEnd)
-      window.removeEventListener('scroll', hide, true)
+      window.removeEventListener('scroll', onScroll, true)
     }
   }, [editor, reposition])
 
-  if (!style) {
+  if (!style || !portalRoot) {
     return null
   }
 
@@ -104,7 +133,13 @@ export function EmptyLineToolbar() {
   }
 
   return createPortal(
-    <div className="tessera-emptyline-toolbar" style={style} data-testid="empty-line-toolbar">
+    <div
+      ref={rootRef}
+      className="tessera-emptyline-toolbar"
+      style={style}
+      data-testid="empty-line-toolbar"
+      onMouseDown={e => e.preventDefault()}
+    >
       <button type="button" className="tessera-tb-btn" title={t('itemText')} onClick={() => runItem(items.find(i => i.id === 'text')!)}>
         ¶
       </button>
@@ -144,7 +179,7 @@ export function EmptyLineToolbar() {
         </div>
       ) : null}
     </div>,
-    document.body,
+    portalRoot,
   )
 }
 
