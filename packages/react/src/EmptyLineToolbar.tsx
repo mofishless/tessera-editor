@@ -33,8 +33,10 @@ export function EmptyLineToolbar() {
   const composingRef = useRef(false)
 
   const reposition = useCallback(() => {
+    const dom = editor.view.dom
     if (composingRef.current || !editor.isFocused) {
       setStyle(null)
+      dom.removeAttribute('data-toolbar-line')
       return
     }
     const { $from, empty } = editor.state.selection
@@ -43,14 +45,19 @@ export function EmptyLineToolbar() {
     if (!isEmptyParagraph) {
       setStyle(null)
       setExpanded(false)
+      dom.removeAttribute('data-toolbar-line')
       return
     }
     const coords = editor.view.coordsAtPos($from.pos)
     setStyle({
       position: 'fixed',
-      top: `${Math.max(8, coords.top - 46)}px`,
+      // Slite behavior: the toolbar OCCUPIES the empty line instead of
+      // floating above it (which would overlap the previous block).
+      top: `${Math.max(2, coords.top - 5)}px`,
       left: `${coords.left}px`,
     })
+    // hide the placeholder text while the toolbar owns this line
+    dom.setAttribute('data-toolbar-line', 'true')
   }, [editor])
 
   useEffect(() => {

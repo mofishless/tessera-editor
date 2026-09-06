@@ -324,6 +324,23 @@
   font-family: var(--te-font);
 }
 
+/* the empty-line toolbar owns the caret's empty line: compact height so it
+   fits the line box, and the placeholder is suppressed while it is showing */
+.tessera-emptyline-toolbar {
+  padding: 3px;
+}
+
+.tessera-emptyline-toolbar .tessera-tb-btn {
+  min-width: 28px;
+  height: 26px;
+  padding: 0 6px;
+}
+
+.tessera-doc[data-toolbar-line='true'] p[data-placeholder]::before,
+.tessera-doc[data-toolbar-line='true'] p.is-empty::before {
+  content: none !important;
+}
+
 .tessera-tb-btn {
   appearance: none;
   border: none;
@@ -777,6 +794,19 @@
 .tessera-doc td p,
 .tessera-doc th p {
   margin: 0;
+}
+
+/* React/Vue NodeView renderers wrap typed cells in a div inside <tr>;
+   that div is illegal in table layout and collapses rows into stacks.
+   display:contents removes the wrapper box so the real th/td participate
+   in the table formatting context. */
+.tessera-doc tr > .react-renderer {
+  display: contents;
+}
+
+.tessera-doc tr > .react-renderer > th,
+.tessera-doc tr > .react-renderer > td {
+  display: table-cell;
 }
 
 /* freeze first column (Slite behavior) */

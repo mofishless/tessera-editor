@@ -12,8 +12,10 @@ let composing = false
 const items = computed(() => defaultSlashItems(t))
 
 function reposition() {
+  const dom = editor.view.dom
   if (composing || !editor.isFocused) {
     style.value = null
+    dom.removeAttribute('data-toolbar-line')
     return
   }
   const { $from, empty } = editor.state.selection
@@ -21,13 +23,18 @@ function reposition() {
   if (!isEmptyParagraph) {
     style.value = null
     expanded.value = false
+    dom.removeAttribute('data-toolbar-line')
     return
   }
   const coords = editor.view.coordsAtPos($from.pos)
   style.value = {
-    top: `${Math.max(8, coords.top - 46)}px`,
+    // Slite behavior: the toolbar OCCUPIES the empty line instead of
+    // floating above it (which would overlap the previous block).
+    top: `${Math.max(2, coords.top - 5)}px`,
     left: `${coords.left}px`,
   }
+  // hide the placeholder text while the toolbar owns this line
+  dom.setAttribute('data-toolbar-line', 'true')
 }
 
 const quick = computed(() => {
