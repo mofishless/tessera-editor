@@ -5,6 +5,7 @@ import { IMPROVE_PRESETS, improveSelection } from '@tessera-editor/ai'
 import type { SuggestionSession } from '@tessera-editor/ai'
 import { useTesseraContext } from './context'
 import { useTesseraPortalRoot } from './portal'
+import FlipPopover from './FlipPopover.vue'
 import CommentComposer from './CommentComposer.vue'
 
 const emit = defineEmits<{ (e: 'session', s: SuggestionSession | null): void }>()
@@ -153,29 +154,29 @@ onBeforeUnmount(() => {
       <button type="button" class="tessera-tb-btn" :title="t('tooltipTurnCollapsible')" @click="chain().insertCollapsible().run()">▸</button>
       <button type="button" class="tessera-tb-btn" :title="t('tooltipMore')" @click="popover = popover === 'more' ? null : 'more'">⋯</button>
 
-      <div v-if="popover === 'color'" class="tessera-popover">
+      <FlipPopover v-if="popover === 'color'" :watch-key="style">
         <button type="button" class="tessera-color-swatch tessera-color-none" :title="t('colorDefault')" @click="chain().unsetColor().run()" />
         <button v-for="color in TEXT_COLORS" :key="color" type="button" class="tessera-color-swatch" :style="{ background: color }" @click="chain().setColor(color).run()" />
-      </div>
+      </FlipPopover>
 
-      <div v-if="popover === 'highlight'" class="tessera-popover">
+      <FlipPopover v-if="popover === 'highlight'" :watch-key="style">
         <button type="button" class="tessera-color-swatch tessera-color-none" :title="t('highlightNone')" @click="chain().unsetHighlight().run()" />
         <button v-for="color in HIGHLIGHT_COLORS" :key="color" type="button" class="tessera-color-swatch" :style="{ background: color }" @click="chain().toggleHighlight({ color }).run()" />
-      </div>
+      </FlipPopover>
 
-      <div v-if="popover === 'link'" class="tessera-popover tessera-link-popover">
+      <FlipPopover v-if="popover === 'link'" class="tessera-link-popover" :watch-key="style">
         <input v-model="linkValue" :placeholder="t('linkPlaceholder')" @keydown.enter.prevent="applyLink" />
         <button type="button" @click="applyLink">{{ t('linkApply') }}</button>
         <button v-if="editor.isActive('link')" type="button" class="tessera-danger" @click="chain().unsetLink().run(); popover = null">
           {{ t('linkRemove') }}
         </button>
-      </div>
+      </FlipPopover>
 
-      <div v-if="popover === 'more'" class="tessera-popover tessera-popover-menu">
+      <FlipPopover v-if="popover === 'more'" class="tessera-popover-menu" :watch-key="style">
         <button type="button" @click="copyMarkdown">{{ t('tooltipCopyMarkdown') }}</button>
-      </div>
+      </FlipPopover>
 
-      <div v-if="popover === 'improve'" class="tessera-popover tessera-improve-popover" data-testid="improve-popover">
+      <FlipPopover v-if="popover === 'improve'" class="tessera-improve-popover" :watch-key="style" data-testid="improve-popover">
         <button v-for="preset in IMPROVE_PRESETS" :key="preset.id" type="button" :disabled="busy" @click="runImprove(preset.instruction)">
           {{ locale === 'zh-CN' ? preset.labelZh : preset.labelEn }}
         </button>
@@ -186,7 +187,7 @@ onBeforeUnmount(() => {
           </button>
         </div>
         <div v-if="error" class="tessera-popover-error">{{ error }}</div>
-      </div>
+      </FlipPopover>
 
       <CommentComposer v-if="popover === 'comment'" @close="popover = null" />
     </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { defaultSlashItems } from '@tessera-editor/core'
 import type { SlashMenuItem } from '@tessera-editor/core'
 import { useTesseraContext } from './context'
@@ -9,8 +9,35 @@ const { editor, t, ai } = useTesseraContext()
 const style = ref<{ top: string; left: string } | null>(null)
 const expanded = ref(false)
 const toolbarRef = ref<HTMLElement | null>(null)
+const panelRef = ref<HTMLElement | null>(null)
 const portalRoot = useTesseraPortalRoot(editor)
+const panelPlacement = ref<'bottom' | 'top'>('bottom')
+const panelMaxHeight = ref<number | undefined>(undefined)
 let composing = false
+
+// Slite-style placement: near the bottom of the viewport the panel opens
+// upward and is clamped to the available space instead of spilling past
+// the content edge
+watch(
+  [expanded, style],
+  () => {
+    const toolbar = toolbarRef.value
+    if (!expanded.value || !toolbar) {
+      panelPlacement.value = 'bottom'
+      panelMaxHeight.value = undefined
+      return
+    }
+    const rect = toolbar.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    const spaceAbove = rect.top
+    const natural = panelRef.value?.offsetHeight ?? 320
+    const flip = spaceBelow < natural + 12 && spaceAbove > spaceBelow
+    panelPlacement.value = flip ? 'top' : 'bottom'
+    const avail = (flip ? spaceAbove : spaceBelow) - 12
+    panelMaxHeight.value = avail > 120 && avail < natural ? avail : undefined
+  },
+  { flush: 'post' },
+)
 
 const items = computed(() => defaultSlashItems(t))
 
@@ -149,7 +176,14 @@ void ai
       >
         ›
       </button>
-      <div v-if="expanded" class="tessera-emptyline-panel" data-testid="empty-line-panel">
+      <div
+        v-if="expanded"
+        ref="panelRef"
+        class="tessera-emptyline-panel"
+        :data-placement="panelPlacement"
+        :style="panelMaxHeight ? { maxHeight: `${panelMaxHeight}px` } : undefined"
+        data-testid="empty-line-panel"
+      >
         <button v-for="item in items" :key="item.id" type="button" class="tessera-slash-item" @click="runItem(item)">
           <span class="tessera-slash-item-title">{{ item.title }}</span>
           <span class="tessera-slash-item-desc">{{ item.description }}</span>

@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { defaultSlashItems } from '@tessera-editor/core'
@@ -31,8 +31,11 @@ export function EmptyLineToolbar() {
   const { editor, t, ai } = useContext(TesseraContext)!
   const [style, setStyle] = useState<CSSProperties | null>(null)
   const [expanded, setExpanded] = useState(false)
+  const [panelPlacement, setPanelPlacement] = useState<'bottom' | 'top'>('bottom')
+  const [panelMaxHeight, setPanelMaxHeight] = useState<number | undefined>(undefined)
   const composingRef = useRef(false)
   const rootRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const portalRoot = useTesseraPortalRoot(editor)
 
   const hideAll = useCallback(() => {
@@ -120,6 +123,26 @@ export function EmptyLineToolbar() {
     }
   }, [editor, reposition])
 
+  // Slite-style placement: near the bottom of the viewport the panel opens
+  // upward and is clamped to the available space instead of spilling past
+  // the content edge
+  useLayoutEffect(() => {
+    const toolbar = rootRef.current
+    if (!expanded || !toolbar) {
+      setPanelPlacement('bottom')
+      setPanelMaxHeight(undefined)
+      return
+    }
+    const rect = toolbar.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    const spaceAbove = rect.top
+    const natural = panelRef.current?.offsetHeight ?? 320
+    const flip = spaceBelow < natural + 12 && spaceAbove > spaceBelow
+    setPanelPlacement(flip ? 'top' : 'bottom')
+    const avail = (flip ? spaceAbove : spaceBelow) - 12
+    setPanelMaxHeight(avail > 120 && avail < natural ? avail : undefined)
+  }, [expanded, style])
+
   if (!style || !portalRoot) {
     return null
   }
@@ -169,7 +192,13 @@ export function EmptyLineToolbar() {
       </button>
 
       {expanded ? (
-        <div className="tessera-emptyline-panel" data-testid="empty-line-panel">
+        <div
+          ref={panelRef}
+          className="tessera-emptyline-panel"
+          data-placement={panelPlacement}
+          style={panelMaxHeight ? { maxHeight: panelMaxHeight } : undefined}
+          data-testid="empty-line-panel"
+        >
           {items.map(item => (
             <button key={item.id} type="button" className="tessera-slash-item" onClick={() => runItem(item)}>
               <span className="tessera-slash-item-title">{item.title}</span>

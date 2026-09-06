@@ -22,7 +22,10 @@ export function createSlashRenderer(t: TesseraTranslator) {
         wrapper = document.createElement('div')
         wrapper.className = 'tessera-slash-wrapper'
         wrapper.appendChild(renderer.element)
-        document.body.appendChild(wrapper)
+        // theme tokens live on .tessera-root — a body portal renders the menu
+        // with unresolved (transparent) chrome
+        const host = suggestionProps.editor.view.dom.closest('.tessera-root') ?? document.body
+        host.appendChild(wrapper)
       },
       onUpdate: (suggestionProps: SuggestionProps<SlashMenuItem>) => {
         renderer?.updateProps({ ...suggestionProps, t })

@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { docToMarkdown } from '@tessera-editor/core'
@@ -17,6 +17,55 @@ const TEXT_COLORS = ['#262629', '#d9414f', '#e8912d', '#31a56f', '#2f9ea8', '#4f
 const HIGHLIGHT_COLORS = ['#fff2a8', '#d6eaff', '#d3f5df', '#fdd9e7', '#e6dcff']
 
 type PopoverKind = null | 'color' | 'highlight' | 'link' | 'improve' | 'more' | 'comment'
+
+/**
+ * Popover container that flips above the toolbar when there is not enough
+ * room below (Slite-style placement). Measured in a layout effect so the
+ * flip happens before the first paint.
+ */
+function FlipPopover({
+  posKey,
+  className = '',
+  testId,
+  children,
+}: {
+  posKey: unknown
+  className?: string
+  testId?: string
+  children: ReactNode
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [placement, setPlacement] = useState<'bottom' | 'top'>('bottom')
+  const [maxHeight, setMaxHeight] = useState<number | undefined>(undefined)
+
+  useLayoutEffect(() => {
+    const pop = ref.current
+    const toolbar = pop?.parentElement
+    if (!pop || !toolbar) {
+      return
+    }
+    const rect = toolbar.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    const spaceAbove = rect.top
+    const natural = pop.offsetHeight
+    const flip = spaceBelow < natural + 12 && spaceAbove > spaceBelow
+    setPlacement(flip ? 'top' : 'bottom')
+    const avail = (flip ? spaceAbove : spaceBelow) - 12
+    setMaxHeight(avail > 100 && avail < natural ? avail : undefined)
+  }, [posKey])
+
+  return (
+    <div
+      ref={ref}
+      className={`tessera-popover${className ? ` ${className}` : ''}`}
+      data-placement={placement}
+      style={maxHeight ? { maxHeight, overflowY: 'auto' } : undefined}
+      data-testid={testId}
+    >
+      {children}
+    </div>
+  )
+}
 
 export function SelectionToolbar({ onSession }: { onSession: (session: SuggestionSession | null) => void }) {
   const { editor, t, ai } = useContext(TesseraContext)!
@@ -151,25 +200,25 @@ export function SelectionToolbar({ onSession }: { onSession: (session: Suggestio
       </TbBtn>
 
       {popover === 'color' ? (
-        <div className="tessera-popover">
+        <FlipPopover posKey={style}>
           <button type="button" className="tessera-color-swatch tessera-color-none" title={t('colorDefault')} onClick={() => chain().unsetColor().run()} />
           {TEXT_COLORS.map(color => (
             <button key={color} type="button" className="tessera-color-swatch" style={{ background: color }} onClick={() => chain().setColor(color).run()} />
           ))}
-        </div>
+        </FlipPopover>
       ) : null}
 
       {popover === 'highlight' ? (
-        <div className="tessera-popover">
+        <FlipPopover posKey={style}>
           <button type="button" className="tessera-color-swatch tessera-color-none" title={t('highlightNone')} onClick={() => chain().unsetHighlight().run()} />
           {HIGHLIGHT_COLORS.map(color => (
             <button key={color} type="button" className="tessera-color-swatch" style={{ background: color }} onClick={() => chain().toggleHighlight({ color }).run()} />
           ))}
-        </div>
+        </FlipPopover>
       ) : null}
 
       {popover === 'link' ? (
-        <div className="tessera-popover tessera-link-popover">
+        <FlipPopover posKey={style} className="tessera-link-popover">
           <input
             autoFocus
             value={linkValue}
@@ -205,11 +254,11 @@ export function SelectionToolbar({ onSession }: { onSession: (session: Suggestio
               {t('linkRemove')}
             </button>
           ) : null}
-        </div>
+        </FlipPopover>
       ) : null}
 
       {popover === 'more' ? (
-        <div className="tessera-popover tessera-popover-menu">
+        <FlipPopover posKey={style} className="tessera-popover-menu">
           <button
             type="button"
             onClick={async () => {
@@ -222,10 +271,10 @@ export function SelectionToolbar({ onSession }: { onSession: (session: Suggestio
           >
             {t('tooltipCopyMarkdown')}
           </button>
-        </div>
+        </FlipPopover>
       ) : null}
 
-      {popover === 'improve' ? <ImprovePopover onSession={onSession} onClose={() => setPopover(null)} /> : null}
+      {popover === 'improve' ? <ImprovePopover posKey={style} onSession={onSession} onClose={() => setPopover(null)} /> : null}
       {popover === 'comment' ? <CommentComposer onClose={() => setPopover(null)} /> : null}
     </div>,
     portalRoot,
@@ -260,9 +309,11 @@ function TbBtn({
 }
 
 function ImprovePopover({
+  posKey,
   onSession,
   onClose,
 }: {
+  posKey: unknown
   onSession: (s: SuggestionSession | null) => void
   onClose: () => void
 }) {
@@ -289,7 +340,7 @@ function ImprovePopover({
   }
 
   return (
-    <div className="tessera-popover tessera-improve-popover" data-testid="improve-popover">
+    <FlipPopover posKey={posKey} className="tessera-improve-popover" testId="improve-popover">
       {IMPROVE_PRESETS.map(preset => (
         <button key={preset.id} type="button" disabled={busy} onClick={() => run(preset.instruction)}>
           {locale === 'zh-CN' ? preset.labelZh : preset.labelEn}
@@ -311,6 +362,6 @@ function ImprovePopover({
         </button>
       </div>
       {error ? <div className="tessera-popover-error">{error}</div> : null}
-    </div>
+    </FlipPopover>
   )
 }

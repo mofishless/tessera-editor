@@ -128,7 +128,10 @@ export function createSlashRenderer(t: TesseraTranslator) {
         wrapper = document.createElement('div')
         wrapper.className = 'tessera-slash-wrapper'
         wrapper.appendChild(renderer.element)
-        document.body.appendChild(wrapper)
+        // theme tokens live on .tessera-root — a body portal renders the menu
+        // with unresolved (transparent) chrome
+        const host = props.editor.view.dom.closest('.tessera-root') ?? document.body
+        host.appendChild(wrapper)
       },
       onUpdate: (props: SuggestionProps<SlashMenuItem>) => {
         renderer?.updateProps({ ...props, t })
