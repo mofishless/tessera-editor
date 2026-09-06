@@ -534,6 +534,10 @@
   z-index: 80;
 }
 .tessera-slash-menu {
+  /* z-index must live on the positioned menu itself: the wrapper is a
+     static div, where z-index has no effect (frozen table columns at
+     z-index 2 would otherwise paint over the menu) */
+  z-index: 90;
   background: var(--te-bg);
   border: 1px solid var(--te-border);
   border-radius: 10px;
