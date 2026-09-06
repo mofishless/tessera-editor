@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import type { Editor } from '@tiptap/react'
-import type { Content } from '@tiptap/core'
+import type { Content, EditorOptions } from '@tiptap/core'
 import { DragHandle } from '@tiptap/extension-drag-handle-react'
 import {
   createTesseraExtensions,
@@ -54,6 +54,9 @@ export interface TesseraProps {
  * slash menu, selection toolbar, drag handle — deliberately NOT Notion's
  * floating "+".
  */
+
+/** Stable reference is required: see the DragHandle usage comment below. */
+const DRAG_HANDLE_POSITION_CONFIG = { placement: 'left', strategy: 'absolute' } as const
 export function Tessera({
   content,
   locale = 'zh-CN',
@@ -70,16 +73,32 @@ export function Tessera({
   const [session, setSession] = useState<SuggestionSession | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Everything handed to useEditor must be referentially stable: an unstable
+  // option (any inline callback) makes @tiptap/react call editor.setOptions
+  // on every render, and TipTap's setOptions runs view.updateState, which
+  // destroys and recreates ALL plugin views. A recreated suggestion view
+  // starts from an already-active state with no "started" transition, so
+  // renderer.onStart never fires and the slash menu UI never mounts.
+  // Latest prop values are therefore read through refs instead.
+  const onUpdateRef = useRef(onUpdate)
+  onUpdateRef.current = onUpdate
+  const onCreateRef = useRef(onCreate)
+  onCreateRef.current = onCreate
+  const runtimeRef = useRef(runtime)
+  runtimeRef.current = runtime
+  const initialContentRef = useRef(content)
+  const editorRef = useRef<Editor | null>(null)
+
   const extensions = useMemo(
     () =>
       createTesseraExtensions({ locale, historyIdleMs }).map(ext => {
         if (ext.name === 'tesseraSlashMenu') {
           return ext.configure({
             render: createSlashRenderer(t),
-            extraItems: runtime
-              ? (ctx: Parameters<NonNullable<import('@tessera-editor/core').SlashMenuOptions['extraItems']>>[0]) =>
-                  aiSlashItems({ editor: ctx.editor, runtime, t: ctx.t })
-              : undefined,
+            extraItems: (ctx: Parameters<NonNullable<import('@tessera-editor/core').SlashMenuOptions['extraItems']>>[0]) => {
+              const rt = runtimeRef.current
+              return rt ? aiSlashItems({ editor: ctx.editor, runtime: rt, t: ctx.t }) : []
+            },
           })
         }
         if (ext.name === 'imageBlock') {
@@ -99,15 +118,34 @@ export function Tessera({
         }
         return ext
       }),
-    [locale, t, runtime, historyIdleMs],
+    // runtime is read through runtimeRef on purpose: rebuilding the extension
+    // list after mount cannot apply anyway (extensions are only read when the
+    // editor is created) and would only trigger the setOptions churn above
+    [locale, t, historyIdleMs],
   )
 
-  const editor = useEditor({
-    extensions,
-    content,
-    onUpdate: ({ editor: e }) => onUpdate?.(e),
-    onCreate: ({ editor: e }) => onCreate?.(e),
-    editorProps: {
+  async function uploadAndInsert(file: File) {
+    const ed = editorRef.current
+    if (!ed) {
+      return
+    }
+    const storage = ed.storage as unknown as Record<string, { upload?: UploadService }>
+    const svc = storage.tesseraServices?.upload
+    if (!svc) {
+      return
+    }
+    try {
+      const asset = await svc.uploadImage(file)
+      ed.chain().focus().setImage({ src: asset.url, alt: asset.name }).run()
+    } catch (err) {
+      console.error('[Tessera] image upload failed:', err)
+    }
+  }
+  const uploadAndInsertRef = useRef(uploadAndInsert)
+  uploadAndInsertRef.current = uploadAndInsert
+
+  const editorProps: EditorOptions['editorProps'] = useMemo(
+    () => ({
       attributes: {
         class: 'tessera-doc',
         spellcheck: 'false',
@@ -115,7 +153,7 @@ export function Tessera({
       handlePaste: (_view, event) => {
         const file = Array.from(event.clipboardData?.files ?? []).find(f => f.type.startsWith('image/'))
         if (file) {
-          void uploadAndInsert(file)
+          void uploadAndInsertRef.current(file)
           return true
         }
         return false
@@ -127,30 +165,27 @@ export function Tessera({
         const file = Array.from(event.dataTransfer?.files ?? []).find(f => f.type.startsWith('image/'))
         if (file) {
           event.preventDefault()
-          void uploadAndInsert(file)
+          void uploadAndInsertRef.current(file)
           return true
         }
         return false
       },
-    },
+    }),
+    [],
+  )
+
+  const handleUpdate = useCallback(({ editor: e }: { editor: Editor }) => onUpdateRef.current?.(e), [])
+  const handleCreate = useCallback(({ editor: e }: { editor: Editor }) => onCreateRef.current?.(e), [])
+
+  const editor = useEditor({
+    extensions,
+    content: initialContentRef.current,
+    onUpdate: handleUpdate,
+    onCreate: handleCreate,
+    editorProps,
   })
 
-  async function uploadAndInsert(file: File) {
-    if (!editor) {
-      return
-    }
-    const storage = editor.storage as unknown as Record<string, { upload?: UploadService }>
-    const svc = storage.tesseraServices?.upload
-    if (!svc) {
-      return
-    }
-    try {
-      const asset = await svc.uploadImage(file)
-      editor.chain().focus().setImage({ src: asset.url, alt: asset.name }).run()
-    } catch (err) {
-      console.error('[Tessera] image upload failed:', err)
-    }
-  }
+  editorRef.current = editor ?? null
 
   // injected services stay current
   useEffect(() => {
@@ -195,11 +230,15 @@ export function Tessera({
       <div className="tessera-root">
         <EditorContent editor={editor} />
         {/* 'left' (vertical center) instead of the default 'left-start': the
-            handle must sit mid-row like Slite, not above multi-line blocks */}
+            handle must sit mid-row like Slite, not above multi-line blocks.
+            The config object must be referentially stable — DragHandle
+            re-registers its plugin whenever its props change identity, and
+            that re-registration recreates every PM plugin view (killing any
+            active slash-menu UI). */}
         <DragHandle
           editor={editor}
           pluginKey="tesseraDragHandle"
-          computePositionConfig={{ placement: 'left', strategy: 'absolute' }}
+          computePositionConfig={DRAG_HANDLE_POSITION_CONFIG}
         >
           <div className="tessera-drag-handle">⠿</div>
         </DragHandle>

@@ -61,13 +61,21 @@ export const SlashMenuView = forwardRef<{ onKeyDown: (props: SuggestionKeyDownPr
     let flatIndex = -1
 
     const style: CSSProperties = rect
-      ? {
-          position: 'fixed',
-          left: `${Math.min(rect.left, window.innerWidth - 340)}px`,
-          top: rect.bottom + 8 > window.innerHeight ? undefined : `${rect.bottom + 8}px`,
-          bottom: rect.bottom + 8 > window.innerHeight ? `${window.innerHeight - rect.top + 8}px` : undefined,
-          width: 320,
-        }
+      ? (() => {
+          // flip by the MENU's max height, not the caret position: a menu
+          // opened mid-viewport would otherwise spill past the viewport bottom
+          const menuMax = 336 // max-height 320 + padding/border allowance
+          const fitsBelow = rect.bottom + 8 + menuMax <= window.innerHeight
+          const fitsAbove = rect.top - 8 - menuMax >= 0
+          const flip = !fitsBelow && fitsAbove
+          return {
+            position: 'fixed',
+            left: `${Math.min(rect.left, window.innerWidth - 340)}px`,
+            top: flip ? undefined : `${Math.min(rect.bottom + 8, window.innerHeight - menuMax)}px`,
+            bottom: flip ? `${window.innerHeight - rect.top + 8}px` : undefined,
+            width: 320,
+          }
+        })()
       : { position: 'fixed', left: -9999, top: -9999 }
 
     return (

@@ -69,13 +69,18 @@ const style = computed(() => {
     return { left: '-9999px', top: '-9999px', position: 'fixed' as const }
   }
   const r = rect.value
-  const flip = r.bottom + 8 > window.innerHeight
+  // flip by the MENU's max height, not the caret position: a menu opened
+  // mid-viewport would otherwise spill past the viewport bottom
+  const menuMax = 336 // max-height 320 + padding/border allowance
+  const fitsBelow = r.bottom + 8 + menuMax <= window.innerHeight
+  const fitsAbove = r.top - 8 - menuMax >= 0
+  const flip = !fitsBelow && fitsAbove
   return {
     position: 'fixed' as const,
     left: `${Math.min(r.left, window.innerWidth - 340)}px`,
     ...(flip
       ? { bottom: `${window.innerHeight - r.top + 8}px` }
-      : { top: `${r.bottom + 8}px` }),
+      : { top: `${Math.min(r.bottom + 8, window.innerHeight - menuMax)}px` }),
     width: '320px',
   }
 })
