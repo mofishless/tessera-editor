@@ -72,9 +72,9 @@ function reposition() {
     return
   }
   style.value = {
-    // Slite behavior: the toolbar OCCUPIES the empty line instead of
-    // floating above it (which would overlap the previous block).
-    top: `${Math.max(2, coords.top - 5)}px`,
+  // Float just ABOVE the empty line so the caret stays visible; the
+  // toolbar bottom sits a couple of pixels over the line's top edge.
+  top: `${Math.max(2, coords.top - 38)}px`,
     left: `${coords.left}px`,
   }
   // hide the placeholder text while the toolbar owns this line
