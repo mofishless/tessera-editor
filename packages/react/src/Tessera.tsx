@@ -23,6 +23,7 @@ import { EmbedBlockView, TocBlockView } from './EmbedTocViews'
 import { createSlashRenderer } from './SlashMenu'
 import { createEmojiRenderer } from './EmojiMenu'
 import { EmptyLineToolbar } from './EmptyLineToolbar'
+import { LinkEditor } from './LinkEditor'
 import { SelectionToolbar } from './SelectionToolbar'
 import { FindReplacePanel, AskPanel, SuggestionBar } from './Panels'
 import { HistoryPanel } from './HistoryPanel'
@@ -290,6 +291,7 @@ export function Tessera({
         </DragHandle>
         <EmptyLineToolbar />
         <SelectionToolbar onSession={setSession} />
+        <LinkEditor />
         <FindReplacePanel />
         <AskPanel />
         <HistoryPanel />

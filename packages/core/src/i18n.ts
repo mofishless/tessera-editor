@@ -67,6 +67,8 @@ export const tesseraMessages = {
     // link panel
     linkPlaceholder: '链接地址…',
     linkApply: '应用',
+    linkSave: '保存',
+    linkTextPlaceholder: '显示文字…',
     linkRemove: '移除链接',
     linkOpen: '打开',
     // empty-line toolbar
@@ -220,6 +222,8 @@ export const tesseraMessages = {
     highlightNone: 'No highlight',
     linkPlaceholder: 'Link URL…',
     linkApply: 'Apply',
+    linkSave: 'Save',
+    linkTextPlaceholder: 'Link text…',
     linkRemove: 'Remove link',
     linkOpen: 'Open',
     emptyLineExpand: 'Show all blocks',

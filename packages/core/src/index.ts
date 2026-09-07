@@ -33,6 +33,8 @@ export type { TesseraMetricsSnapshot } from './extensions/metrics'
 export { TesseraWordPaste } from './extensions/word-paste'
 export { isWordHtml, cleanWordHtml } from './wordpaste'
 export { findBlockPosById, deleteBlockById, blockAnchorUrl } from './blockmenu'
+export { findLinkRange, saveLinkRange, removeLinkRange } from './linkedit'
+export type { TesseraLinkRange } from './linkedit'
 
 // preset
 export { createTesseraExtensions, ID_BLOCK_TYPES } from './preset'

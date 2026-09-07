@@ -26,6 +26,7 @@ import {
 } from './views/extensions'
 import EmptyLineToolbar from './EmptyLineToolbar.vue'
 import SelectionToolbar from './SelectionToolbar.vue'
+import LinkEditor from './LinkEditor.vue'
 import FindReplacePanel from './FindReplacePanel.vue'
 import AskPanel from './AskPanel.vue'
 import HistoryPanel from './HistoryPanel.vue'
@@ -204,6 +205,7 @@ provideTessera({
     <EditorContent :editor="editor" />
     <EmptyLineToolbar />
     <SelectionToolbar @session="s => (session = s)" />
+    <LinkEditor />
     <FindReplacePanel />
     <AskPanel />
     <HistoryPanel />
