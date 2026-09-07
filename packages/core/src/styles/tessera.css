@@ -1003,16 +1003,18 @@
   display: table-cell;
 }
 
-/* freeze first column (Slite behavior) */
-.tessera-doc table[data-freeze-first='true'] td:first-child,
-.tessera-doc table[data-freeze-first='true'] th:first-child {
+/* freeze first column (Slite behavior). NOT :first-child — every cell sits
+   inside its own .react-renderer wrapper, so each one IS a :first-child
+   there; select by the column index the node views render instead. */
+.tessera-doc table[data-freeze-first='true'] td[data-index='0'],
+.tessera-doc table[data-freeze-first='true'] th[data-index='0'] {
   position: sticky;
   left: 0;
   background: #fff;
   z-index: 2;
   box-shadow: 1px 0 0 var(--te-border);
 }
-.tessera-doc table[data-freeze-first='true'] th:first-child {
+.tessera-doc table[data-freeze-first='true'] th[data-index='0'] {
   background: #fafbfc;
 }
 
@@ -1048,17 +1050,24 @@
 
 .tessera-col-menu {
   flex-direction: column;
+  flex-wrap: nowrap; /* .tessera-popover wraps; wrapped columns would spill sideways */
   align-items: stretch;
-  width: 190px;
+  width: 210px;
   max-height: 320px;
-  overflow-y: auto;
-  top: calc(100% + 6px);
+  /* the menu is fixed-positioned and portaled out of the table; the old
+     top: calc(100%+6px) anchor only made sense for the inline variant */
+  top: auto;
+  overflow: hidden auto;
 }
 
 .tessera-menu-section {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 2px;
+}
+.tessera-menu-section button {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tessera-menu-sep {

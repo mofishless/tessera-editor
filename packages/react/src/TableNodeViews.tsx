@@ -1,4 +1,6 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
 import { NodeViewWrapper, NodeViewContent, ReactNodeViewRenderer } from '@tiptap/react'
 import type { NodeViewProps } from '@tiptap/react'
 import {
@@ -9,6 +11,7 @@ import {
 } from '@tessera-editor/core'
 import type { TableColumnKind } from '@tessera-editor/core'
 import { TesseraContext } from './context'
+import { useTesseraPortalRoot } from './portal'
 
 /**
  * Table NodeViews (v1.1):
@@ -53,8 +56,42 @@ function columnIndex(props: NodeViewProps): number {
 /** Header cell with the column menu. */
 function AiTableHeaderView(props: NodeViewProps) {
   const { editor, t } = useContext(TesseraContext)!
+  const portalRoot = useTesseraPortalRoot(editor)
   const [open, setOpen] = useState(false)
+  const [style, setStyle] = useState<CSSProperties>({})
+  const thRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
   const index = columnIndex(props)
+
+  // the table has overflow:hidden (corner rounding), so an inline dropdown
+  // would be clipped away — the menu portals out of the table and anchors
+  // to the header cell with fixed positioning, flipping near the viewport
+  // bottom like every other popover
+  const toggle = () => {
+    const th = thRef.current
+    if (th) {
+      const r = th.getBoundingClientRect()
+      const flip = window.innerHeight - r.bottom < 340 && r.top > 340
+      const left = Math.min(Math.max(8, r.left), window.innerWidth - 198)
+      setStyle(
+        flip
+          ? { left: `${left}px`, top: 'auto', bottom: `${window.innerHeight - r.top + 6}px` }
+          : { left: `${left}px`, top: `${r.bottom + 6}px`, bottom: 'auto' },
+      )
+    }
+    setOpen(v => !v)
+  }
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (menuRef.current?.contains(target) || target.closest('.tessera-col-menu-btn')) return
+      setOpen(false)
+    }
+    window.addEventListener('mousedown', onDown)
+    return () => window.removeEventListener('mousedown', onDown)
+  }, [open])
 
   const run = (fn: () => unknown) => {
     setOpen(false)
@@ -67,7 +104,7 @@ function AiTableHeaderView(props: NodeViewProps) {
   }
 
   return (
-    <NodeViewWrapper as="th" className="tessera-th" data-index={index}>
+    <NodeViewWrapper ref={thRef} as="th" className="tessera-th" data-index={index}>
       <NodeViewContent className="tessera-th-content" />
       <button
         type="button"
@@ -75,12 +112,19 @@ function AiTableHeaderView(props: NodeViewProps) {
         contentEditable={false}
         title={t('colMenuTitle')}
         onMouseDown={e => e.preventDefault()}
-        onClick={() => setOpen(v => !v)}
+        onClick={toggle}
       >
         ⌄
       </button>
-      {open ? (
-        <div className="tessera-popover tessera-col-menu" contentEditable={false} onMouseDown={e => e.preventDefault()}>
+      {open && portalRoot
+        ? createPortal(
+            <div
+              ref={menuRef}
+              className="tessera-popover tessera-col-menu"
+              style={{ position: 'fixed', ...style }}
+              contentEditable={false}
+              onMouseDown={e => e.preventDefault()}
+            >
           <div className="tessera-menu-section">
             {TABLE_COLUMN_KINDS.map(kind => (
               <button key={kind} type="button" onClick={() => run(() => editor.commands.setColumnType(index, kind))}>
@@ -125,8 +169,9 @@ function AiTableHeaderView(props: NodeViewProps) {
           <button type="button" className="tessera-danger" onClick={() => run(() => editor.commands.deleteTable())}>
             {t('tableDelete')}
           </button>
-        </div>
-      ) : null}
+            </div>,
+            portalRoot,
+          ) : null}
     </NodeViewWrapper>
   )
 }
@@ -161,7 +206,7 @@ function AiTableCellView(props: NodeViewProps) {
 
   if (kind === 'text') {
     return (
-      <NodeViewWrapper as="td" className="tessera-td">
+      <NodeViewWrapper as="td" className="tessera-td" data-index={columnIndex(props)}>
         <NodeViewContent />
       </NodeViewWrapper>
     )
@@ -170,7 +215,7 @@ function AiTableCellView(props: NodeViewProps) {
   const setValue = (next: unknown) => props.updateAttributes({ value: next })
 
   return (
-    <NodeViewWrapper as="td" className={`tessera-td tessera-td--${kind}`}>
+    <NodeViewWrapper as="td" className={`tessera-td tessera-td--${kind}`} data-index={columnIndex(props)}>
       <NodeViewContent className="tessera-td-hidden" />
       {kind === 'checkbox' ? (
         <input

@@ -10,6 +10,13 @@ const { editor } = useTesseraContext()
 const value = computed(() => props.node.attrs.value as unknown)
 const tagInput = ref('')
 
+const columnIndex = (p: NodeViewProps): number => {
+  const pos = p.getPos()
+  if (typeof pos !== 'number') return 0
+  const $pos = editor.state.doc.resolve(pos)
+  return $pos.index($pos.depth)
+}
+
 const kind = computed<TableColumnKind>(() => {
   const pos = props.getPos()
   if (typeof pos !== 'number') return 'text'
@@ -46,7 +53,7 @@ function commitTag(multi: boolean) {
 </script>
 
 <template>
-  <NodeViewWrapper as="td" class="tessera-td" :class="`tessera-td--${kind}`">
+  <NodeViewWrapper as="td" class="tessera-td" :class="`tessera-td--${kind}`" :data-index="columnIndex(props)">
     <NodeViewContent class="tessera-td-hidden" />
     <input
       v-if="kind === 'checkbox'"
