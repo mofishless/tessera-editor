@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import type { SuggestionProps, SuggestionKeyDownProps } from '@tiptap/suggestion'
 import type { EmojiItem } from '@tessera-editor/core'
 
@@ -7,6 +7,16 @@ const props = defineProps<SuggestionProps<EmojiItem>>()
 
 const selectedIndex = ref(0)
 const rect = ref<DOMRect | null>(null)
+const gridRef = ref<HTMLDivElement | null>(null)
+
+// keep the highlighted emoji inside the scrollable grid when navigating
+watch(selectedIndex, () => {
+  nextTick(() => {
+    gridRef.value
+      ?.querySelectorAll<HTMLElement>('.tessera-emoji-item')
+      [selectedIndex.value]?.scrollIntoView({ block: 'nearest' })
+  })
+})
 
 watch(
   () => props.items,
@@ -57,7 +67,7 @@ const style = computed(() => {
 </script>
 
 <template>
-  <div class="tessera-emoji-menu" :style="style" data-testid="emoji-menu">
+  <div ref="gridRef" class="tessera-emoji-menu" :style="style" data-testid="emoji-menu">
     <button
       v-for="(item, i) in items"
       :key="item.name"

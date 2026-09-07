@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import type { SuggestionProps, SuggestionKeyDownProps } from '@tiptap/suggestion'
 import type { SlashMenuItem } from '@tessera-editor/core'
 
@@ -12,6 +12,15 @@ const props = defineProps<{
 
 const selectedIndex = ref(0)
 const rect = ref<DOMRect | null>(null)
+const listRef = ref<HTMLDivElement | null>(null)
+
+// keyboard navigation must keep the highlighted item inside the scrollable
+// menu (max-height 320 + overflow-y auto in tessera.css)
+watch(selectedIndex, () => {
+  nextTick(() => {
+    listRef.value?.querySelector<HTMLElement>('[data-selected="true"]')?.scrollIntoView({ block: 'nearest' })
+  })
+})
 
 watch(
   () => props.items,
@@ -87,7 +96,7 @@ const style = computed(() => {
 </script>
 
 <template>
-  <div class="tessera-slash-menu" :style="style" data-testid="slash-menu">
+  <div ref="listRef" class="tessera-slash-menu" :style="style" data-testid="slash-menu">
     <div v-for="[group, groupItems] in groups" :key="group" class="tessera-slash-group">
       <div class="tessera-slash-group-title">{{ groupTitle(group) }}</div>
       <button

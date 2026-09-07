@@ -79,7 +79,7 @@ export const SlashMenuView = forwardRef<{ onKeyDown: (props: SuggestionKeyDownPr
       : { position: 'fixed', left: -9999, top: -9999 }
 
     return (
-      <div className="tessera-slash-menu" style={style} data-testid="slash-menu">
+      <div ref={listRef} className="tessera-slash-menu" style={style} data-testid="slash-menu">
         {Array.from(groups.entries()).map(([group, groupItems]) => (
           <div key={group} className="tessera-slash-group">
             <div className="tessera-slash-group-title">
