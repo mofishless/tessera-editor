@@ -4,6 +4,8 @@ export default defineConfig({
   title: 'Tessera',
   description: '个人开源的富文本编辑器组件家族——对标 Slite 体验，AI-ready，开箱即用',
   lang: 'zh-CN',
+  // GitHub 项目页挂在仓库子路径下；本地 dev/preview 由 VitePress 自动处理
+  base: '/tessera-editor/',
   themeConfig: {
     nav: [
       { text: '指南', link: '/guide/getting-started' },
@@ -33,6 +35,6 @@ export default defineConfig({
         },
       ],
     },
-    socialLinks: [{ icon: 'github', link: 'https://github.com/tessera-editor/tessera' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/mofishless/tessera-editor' }],
   },
 })
