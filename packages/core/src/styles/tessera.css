@@ -648,8 +648,10 @@
   position: absolute;
   top: 48px;
   right: 8px;
-  bottom: 8px;
   width: 300px;
+  /* hug content by default; only stretch toward a viewport-ish cap when the
+     conversation grows (body scrolls past the cap via flex + overflow) */
+  max-height: min(520px, calc(100% - 56px));
   z-index: 55;
   display: flex;
   flex-direction: column;
