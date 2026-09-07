@@ -12,7 +12,6 @@ import { TesseraContext } from './context'
  */
 
 function AiImageNodeView({ node, updateAttributes, selected, decorations }: NodeViewProps) {
-  console.log('[imgview] decorations:', Array.isArray(decorations), decorations?.length)
   const galleryAttrs = (() => {
     for (const deco of decorations ?? []) {
       const attrs = (deco as unknown as { type?: { attrs?: Record<string, string> } }).type?.attrs
@@ -25,14 +24,31 @@ function AiImageNodeView({ node, updateAttributes, selected, decorations }: Node
   const { t } = useContext(TesseraContext)!
   const imgRef = useRef<HTMLImageElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const [zoom, setZoom] = useState(1)
+  const clampZoom = (z: number) => Math.min(8, Math.max(0.2, z))
 
   useEffect(() => {
     if (!preview) return
+    setZoom(1)
     const close = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setPreview(null)
+      else if (e.key === '+' || e.key === '=') setZoom(z => clampZoom(z * 1.25))
+      else if (e.key === '-') setZoom(z => clampZoom(z / 1.25))
+      else if (e.key === '0') setZoom(1)
+    }
+    // ctrl+wheel needs a non-passive listener so preventDefault can
+    // suppress the browser's own page zoom
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return
+      e.preventDefault()
+      setZoom(z => clampZoom(z * (e.deltaY < 0 ? 1.15 : 1 / 1.15)))
     }
     window.addEventListener('keydown', close)
-    return () => window.removeEventListener('keydown', close)
+    window.addEventListener('wheel', onWheel, { passive: false })
+    return () => {
+      window.removeEventListener('keydown', close)
+      window.removeEventListener('wheel', onWheel)
+    }
   }, [preview])
   const { src, alt, width, align } = node.attrs as {
     src: string
@@ -92,7 +108,26 @@ function AiImageNodeView({ node, updateAttributes, selected, decorations }: Node
       {preview
         ? createPortal(
             <div className="tessera-lightbox" onClick={() => setPreview(null)}>
-              <img src={preview} alt={alt ?? ''} />
+              <img
+                src={preview}
+                alt={alt ?? ''}
+                style={{ transform: `scale(${zoom})` }}
+                onClick={e => e.stopPropagation()}
+                onDoubleClick={() => setZoom(1)}
+              />
+              <div className="tessera-lightbox-bar" onClick={e => e.stopPropagation()}>
+                <button type="button" title={t('imageZoomOut')} onClick={() => setZoom(z => clampZoom(z / 1.25))}>
+                  −
+                </button>
+                <span className="tessera-lightbox-scale">{Math.round(zoom * 100)}%</span>
+                <button type="button" title={t('imageZoomIn')} onClick={() => setZoom(z => clampZoom(z * 1.25))}>
+                  +
+                </button>
+                <button type="button" title={t('imageZoomReset')} onClick={() => setZoom(1)}>
+                  1:1
+                </button>
+                <span className="tessera-lightbox-hint">{t('imageZoomHint')}</span>
+              </div>
             </div>,
             document.body,
           )

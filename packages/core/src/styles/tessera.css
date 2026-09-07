@@ -804,6 +804,46 @@
   max-height: 90vh;
   border-radius: 8px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s ease;
+}
+.tessera-lightbox-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(24, 26, 34, 0.78);
+  color: #e8eaf0;
+  font-size: 12px;
+  font-family: var(--te-font);
+  user-select: none;
+  cursor: default;
+}
+.tessera-lightbox-bar button {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+.tessera-lightbox-bar button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.tessera-lightbox-scale {
+  min-width: 46px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.tessera-lightbox-hint {
+  margin-left: 8px;
+  opacity: 0.55;
 }
 
 /* ---------- v1.1 additions: gallery / emoji picker ---------- */

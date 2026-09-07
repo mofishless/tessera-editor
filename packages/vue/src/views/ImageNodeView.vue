@@ -8,13 +8,29 @@ const props = defineProps<NodeViewProps>()
 const { t } = useTesseraContext()
 const imgRef = ref<HTMLImageElement | null>(null)
 const preview = ref<string | null>(null)
+const zoom = ref(1)
+const clampZoom = (z: number) => Math.min(8, Math.max(0.2, z))
 
 function onPreviewKey(e: KeyboardEvent) {
   if (e.key === 'Escape') preview.value = null
+  else if (e.key === '+' || e.key === '=') zoom.value = clampZoom(zoom.value * 1.25)
+  else if (e.key === '-') zoom.value = clampZoom(zoom.value / 1.25)
+  else if (e.key === '0') zoom.value = 1
+}
+// ctrl+wheel needs preventDefault to suppress the browser's own page zoom;
+// an element-level wheel listener is non-passive by default
+function onLightboxWheel(e: WheelEvent) {
+  if (!e.ctrlKey) return
+  e.preventDefault()
+  zoom.value = clampZoom(zoom.value * (e.deltaY < 0 ? 1.15 : 1 / 1.15))
 }
 watch(preview, v => {
-  if (v) window.addEventListener('keydown', onPreviewKey)
-  else window.removeEventListener('keydown', onPreviewKey)
+  if (v) {
+    zoom.value = 1
+    window.addEventListener('keydown', onPreviewKey)
+  } else {
+    window.removeEventListener('keydown', onPreviewKey)
+  }
 })
 
 function startResize(event: PointerEvent) {
@@ -75,8 +91,21 @@ const galleryAttrs = computed(() => {
     </div>
   </NodeViewWrapper>
   <Teleport to="body">
-    <div v-if="preview" class="tessera-lightbox" @click="preview = null">
-      <img :src="preview" :alt="node.attrs.alt ?? ''" />
+    <div v-if="preview" class="tessera-lightbox" @click="preview = null" @wheel="onLightboxWheel">
+      <img
+        :src="preview"
+        :alt="node.attrs.alt ?? ''"
+        :style="{ transform: `scale(${zoom})` }"
+        @click.stop
+        @dblclick="zoom = 1"
+      />
+      <div class="tessera-lightbox-bar" @click.stop>
+        <button type="button" :title="t('imageZoomOut')" @click="zoom = clampZoom(zoom / 1.25)">−</button>
+        <span class="tessera-lightbox-scale">{{ Math.round(zoom * 100) }}%</span>
+        <button type="button" :title="t('imageZoomIn')" @click="zoom = clampZoom(zoom * 1.25)">+</button>
+        <button type="button" :title="t('imageZoomReset')" @click="zoom = 1">1:1</button>
+        <span class="tessera-lightbox-hint">{{ t('imageZoomHint') }}</span>
+      </div>
     </div>
   </Teleport>
 </template>
