@@ -201,7 +201,6 @@ export function createMarkdownSerializer(schema: Schema): MarkdownSerializer {
     textStyle: { open: '', close: '', mixable: true },
     color: { open: '', close: '', mixable: true },
     aiAttribution: { open: '', close: '', mixable: true },
-    tesseraPlaceholder: { open: '', close: '', mixable: true },
     comment: { open: '', close: '', mixable: true },
   }
 

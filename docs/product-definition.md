@@ -41,7 +41,7 @@
 playground          演示与验收环境（M1 起部署 GitHub Pages）
 ```
 
-**注入服务**（组件只依赖接口，ADR-0001）：`AIRuntime`（M2）、`UploadService`（M1）、`StorageService`（v1.1 版本历史）、`IdentityService`（v1.x 评论）。
+**注入服务**（组件只依赖接口，ADR-0001）：`AIRuntime`（M2）、`UploadService`（M1）、`IdentityService`/`CommentStore`（v1.1 评论）。
 
 **插件 API 公开度**：v1.0 只承诺最小公共面（透传 TipTap extension 注册自定义块 + 斜杠命令注册）；完整插件 API 走 `experimental` 命名空间、不带 semver 承诺，v2 转正。
 
@@ -60,9 +60,9 @@ playground          演示与验收环境（M1 起部署 GitHub Pages）
 | **M1**（2–3 月） | P0 全部块 + Hint/折叠块 + 输入体系三件套 + 权威/交换格式 + UploadService + playground 上线 | acceptance-checklist M1 项 |
 | **M2** | AI 骨架（Runtime 接口、流式插入、diff 接受/拒绝、写回协议、归因）+ `ai-openai`/`ai-cli` 两适配器 | acceptance-checklist M2 项 |
 | **v1.0** | Vue 3 绑定 + 文档站 + 双语 README，正式发布 | 双绑定 IME 回归通过 |
-| **v1.1** | 类型化列表格（质量重点）+ 持久化历史（StorageService）+ 行内评论（IdentityService）+ Embed/TOC/占位符 | 对应清单项 |
+| **v1.1** | 类型化列表格（质量重点）+ 行内评论（CommentStore/IdentityService）+ Embed/TOC | 对应清单项 |
 
-**块范围三批**：P0 = 段落、H1–H4、有序/无序列表、任务清单、引用、分割线、行内格式全套（颜色/高亮）、行内代码、代码块、链接、图片；P1 = Hint、折叠块（v1 内），轻表格、Embed、TOC、占位符（v1.1）；P2 = 可选块包（LaTeX、Mermaid、多栏、Collection 等，需宿主数据服务的做成注入模式）。
+**块范围三批**：P0 = 段落、H1–H4、有序/无序列表、任务清单、引用、分割线、行内格式全套（颜色/高亮）、行内代码、代码块、链接、图片；P1 = Hint、折叠块（v1 内），轻表格、Embed、TOC（v1.1）；P2 = 可选块包（LaTeX、Mermaid、多栏、Collection 等，需宿主数据服务的做成注入模式）。
 
 ## 6. 工程约定
 

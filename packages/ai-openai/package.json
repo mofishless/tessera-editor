@@ -32,11 +32,15 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tessera-editor/tessera.git",
+    "url": "git+https://github.com/mofishless/tessera-editor.git",
     "directory": "packages/ai-openai"
   },
-  "homepage": "https://github.com/tessera-editor/tessera#readme",
-  "bugs": "https://github.com/tessera-editor/tessera/issues",
+  "homepage": "https://github.com/mofishless/tessera-editor/tree/main/packages/ai-openai#readme",
+  "bugs": "https://github.com/mofishless/tessera-editor/issues",
   "sideEffects": false,
-  "module": "./dist/index.js"
+  "module": "./dist/index.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
 }

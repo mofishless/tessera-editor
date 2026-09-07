@@ -12,8 +12,6 @@ export { TocBlock } from './nodes/toc'
 export { AiAttribution } from './marks/ai'
 export type { AiAttributionOptions } from './marks/ai'
 export { CommentMark, CommentCommands, listCommentRanges } from './marks/comment'
-export { PlaceholderMark, PlaceholderCommands } from './marks/placeholder'
-export type { PlaceholderKind } from './marks/placeholder'
 
 // extensions
 export { TesseraInputRules } from './extensions/input-rules'
@@ -24,8 +22,6 @@ export { SlashMenu, defaultSlashItems } from './extensions/slash'
 export type { SlashMenuItem, SlashMenuOptions, SlashRenderFactory } from './extensions/slash'
 export { EmojiMenu, EMOJI_ITEMS, filterEmojiItems } from './extensions/emoji'
 export type { EmojiItem, EmojiMenuOptions } from './extensions/emoji'
-export { TesseraHistory, historyKey } from './extensions/history'
-export type { HistorySnapshotOptions } from './extensions/history'
 export { BlockContextMenu } from './extensions/context-menu'
 export { TesseraGallery, galleryKey, findGalleryRuns } from './extensions/gallery'
 export { TesseraMetrics, getTesseraMetrics, measureTesseraMetrics } from './extensions/metrics'
@@ -48,7 +44,6 @@ export type { TesseraLocale, TesseraMessageKey, TesseraTranslator } from './i18n
 export {
   TesseraServices,
   getUploadService,
-  getStorageService,
   getCommentStore,
   getIdentityService,
 } from './services'
@@ -56,8 +51,6 @@ export type {
   UploadService,
   UploadedAsset,
   TesseraServicesStorage,
-  StorageService,
-  DocSnapshot,
   CommentStore,
   CommentThread,
   CommentEntry,
@@ -67,9 +60,6 @@ export type {
 // format layer
 export { docToMarkdown, markdownToDoc, createMarkdownSerializer, stableJson } from './markdown'
 
-// diff (history panel)
-export { diffDocs, wordDiff, diffSummary } from './diff'
-export type { WordDiffPart, BlockDiffEntry } from './diff'
 
 // write-back protocol
 export {

@@ -133,7 +133,7 @@ export const initialDoc = {
         {
           type: 'tableRow',
           content: [
-            { type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: '版本历史' }] }] },
+            { type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: '图片画廊' }] }] },
             { type: 'tableCell', attrs: { value: ['已完成'] }, content: [{ type: 'paragraph' }] },
             { type: 'tableCell', attrs: { value: true }, content: [{ type: 'paragraph' }] },
             { type: 'tableCell', attrs: { value: '2026-09-06' }, content: [{ type: 'paragraph' }] },
@@ -144,11 +144,7 @@ export const initialDoc = {
     {
       type: 'paragraph',
       content: [
-        { type: 'text', text: '表格：悬停表头点 ⌄ 换列类型/排序/插删列；右键行插删行；右键表格复制 CSV。占位符示例：' },
-        { type: 'text', marks: [{ type: 'tesseraPlaceholder', attrs: { kind: 'person' } }], text: '待填人' },
-        { type: 'text', text: ' / ' },
-        { type: 'text', marks: [{ type: 'tesseraPlaceholder', attrs: { kind: 'date' } }], text: '待填日期' },
-        { type: 'text', text: '。' },
+        { type: 'text', text: '表格：悬停表头点 ⌄ 换列类型/排序/插删列；右键行插删行；右键表格复制 CSV。' },
       ],
     },
     { type: 'paragraph', content: [] },

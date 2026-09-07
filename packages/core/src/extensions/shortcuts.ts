@@ -24,7 +24,6 @@ declare module '@tiptap/core' {
     'tessera:findPanel': Record<string, never>
     'tessera:insertImage': Record<string, never>
     'tessera:askPanel': Record<string, never>
-    'tessera:historyPanel': Record<string, never>
     'tessera:commentPanel': Record<string, never>
   }
 }
@@ -77,7 +76,6 @@ export const TesseraShortcuts = Extension.create({
       },
       'Mod-Alt-s': () => this.editor.commands.insertTableTyped({ withHeaderRow: true }),
       'Mod-Alt-t': () => this.editor.commands.insertTableTyped({ withHeaderRow: false }),
-      'Mod-Alt-p': () => this.editor.commands.togglePlaceholderMark('text'),
       'Mod-Alt-m': () => {
         this.editor.emit('tessera:commentPanel', {})
         return true

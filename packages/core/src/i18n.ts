@@ -129,17 +129,6 @@ export const tesseraMessages = {
     tableCopyCsv: '复制为 CSV',
     tableToggleHeader: '切换表头',
     cellEmpty: '空',
-    // v1.1: history
-    itemHistory: '版本历史',
-    historyTitle: '版本历史',
-    historyEmpty: '暂无快照（编辑后空闲自动保存，或手动捕获）',
-    historyCapture: '捕获快照',
-    historyRestore: '恢复此版本',
-    historyCurrent: '当前',
-    historyDiffAdded: '新增',
-    historyDiffRemoved: '删除',
-    historyDiffChanged: '修改',
-    historyConfirmRestore: '恢复到该版本？当前内容将被替换（可撤销）',
     // v1.1: comments
     tooltipCommentV11: '评论',
     commentTitle: '评论',
@@ -151,7 +140,7 @@ export const tesseraMessages = {
     commentDelete: '删除',
     commentResolvedBadge: '已解决',
     commentCount: (n: number) => `${n} 条评论`,
-    // v1.1: embed / toc / placeholder
+    // v1.1: embed / toc
     itemEmbed: '嵌入',
     itemEmbedDesc: '嵌入外部网页（iframe 沙箱）',
     itemToc: '目录',
@@ -161,9 +150,6 @@ export const tesseraMessages = {
     embedInvalid: '无效链接',
     embedOpen: '打开原链接',
     tocEmpty: '暂无标题——添加 H1–H4 后自动出现',
-    placeholderText: '待补充',
-    placeholderPerson: '待填人',
-    placeholderDate: '待填日期',
     // v1.1: block context menu
     menuCopyAnchor: '复制锚链接',
     menuCopyBlockId: '复制块 ID',
@@ -280,17 +266,6 @@ export const tesseraMessages = {
     tableCopyCsv: 'Copy as CSV',
     tableToggleHeader: 'Toggle header row',
     cellEmpty: 'Empty',
-    // v1.1: history
-    itemHistory: 'Version history',
-    historyTitle: 'Version history',
-    historyEmpty: 'No snapshots yet (auto-captured when idle, or capture manually)',
-    historyCapture: 'Capture snapshot',
-    historyRestore: 'Restore this version',
-    historyCurrent: 'Current',
-    historyDiffAdded: 'Added',
-    historyDiffRemoved: 'Removed',
-    historyDiffChanged: 'Changed',
-    historyConfirmRestore: 'Restore this version? Current content will be replaced (undoable)',
     // v1.1: comments
     tooltipCommentV11: 'Comment',
     commentTitle: 'Comments',
@@ -302,7 +277,7 @@ export const tesseraMessages = {
     commentDelete: 'Delete',
     commentResolvedBadge: 'Resolved',
     commentCount: (n: number) => `${n} comment${n === 1 ? '' : 's'}`,
-    // v1.1: embed / toc / placeholder
+    // v1.1: embed / toc
     itemEmbed: 'Embed',
     itemEmbedDesc: 'Embed an external page (sandboxed iframe)',
     itemToc: 'Table of contents',
@@ -312,9 +287,6 @@ export const tesseraMessages = {
     embedInvalid: 'Invalid URL',
     embedOpen: 'Open original',
     tocEmpty: 'No headings yet — add H1–H4 and they appear here',
-    placeholderText: 'to fill in',
-    placeholderPerson: 'assignee',
-    placeholderDate: 'due date',
     // v1.1: block context menu
     menuCopyAnchor: 'Copy anchor link',
     menuCopyBlockId: 'Copy block ID',

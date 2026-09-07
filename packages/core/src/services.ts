@@ -1,5 +1,4 @@
 import { Extension } from '@tiptap/core'
-import type { JSONContent } from '@tiptap/core'
 
 /**
  * Injected services (ADR-0001 family): the component family never performs
@@ -16,20 +15,6 @@ export interface UploadedAsset {
 export interface UploadService {
   uploadImage(file: File | Blob): Promise<UploadedAsset>
   uploadFile?(file: File | Blob): Promise<UploadedAsset>
-}
-
-/** v1.1: persistent version history storage (snapshots keyed by time). */
-export interface DocSnapshot {
-  id: string
-  ts: number
-  doc: JSONContent
-  label?: string
-}
-
-export interface StorageService {
-  saveSnapshot(snapshot: DocSnapshot): Promise<void>
-  listSnapshots(): Promise<DocSnapshot[]>
-  deleteSnapshot?(id: string): Promise<void>
 }
 
 /** v1.1: inline comments. */
@@ -55,14 +40,13 @@ export interface CommentStore {
   remove(id: string): Promise<void>
 }
 
-/** v1.1: who is editing (author of comments / history labels). */
+/** v1.1: who is editing (comment authorship). */
 export interface IdentityService {
   getCurrentUser(): { id: string; name: string } | null
 }
 
 export interface TesseraServicesStorage {
   upload?: UploadService
-  storage?: StorageService
   comments?: CommentStore
   identity?: IdentityService
 }
@@ -73,7 +57,6 @@ export const TesseraServices = Extension.create({
   addStorage() {
     return {
       upload: undefined,
-      storage: undefined,
       comments: undefined,
       identity: undefined,
     } satisfies TesseraServicesStorage
@@ -88,10 +71,6 @@ function servicesBag(editor: ServicesEditor): TesseraServicesStorage | undefined
 
 export function getUploadService(editor: ServicesEditor): UploadService | undefined {
   return servicesBag(editor)?.upload
-}
-
-export function getStorageService(editor: ServicesEditor): StorageService | undefined {
-  return servicesBag(editor)?.storage
 }
 
 export function getCommentStore(editor: ServicesEditor): CommentStore | undefined {

@@ -14,13 +14,11 @@ import { EmbedBlock } from './nodes/embed'
 import { TocBlock } from './nodes/toc'
 import { AiAttribution } from './marks/ai'
 import { CommentMark, CommentCommands } from './marks/comment'
-import { PlaceholderMark, PlaceholderCommands } from './marks/placeholder'
 import { TesseraInputRules } from './extensions/input-rules'
 import { TesseraShortcuts } from './extensions/shortcuts'
 import { TesseraFindReplace } from './extensions/find-replace'
 import { SlashMenu } from './extensions/slash'
 import { EmojiMenu } from './extensions/emoji'
-import { TesseraHistory } from './extensions/history'
 import { BlockContextMenu } from './extensions/context-menu'
 import { TesseraGallery } from './extensions/gallery'
 import { TesseraMetrics } from './extensions/metrics'
@@ -30,8 +28,6 @@ import { createTesseraT, type TesseraLocale } from './i18n'
 
 export interface TesseraPresetOptions {
   locale?: TesseraLocale
-  /** v1.1 history auto-capture idle window (playground uses a short one) */
-  historyIdleMs?: number
 }
 
 /** Node types that receive stable block IDs (write-back protocol basis). */
@@ -92,8 +88,6 @@ export function createTesseraExtensions(options: TesseraPresetOptions = {}): Ext
     AiAttribution,
     CommentMark,
     CommentCommands,
-    PlaceholderMark,
-    PlaceholderCommands,
     UniqueID.configure({
       types: ID_BLOCK_TYPES,
       attributeName: 'id',
@@ -105,7 +99,6 @@ export function createTesseraExtensions(options: TesseraPresetOptions = {}): Ext
     TesseraInputRules,
     TesseraShortcuts,
     TesseraFindReplace,
-    TesseraHistory.configure({ idleMs: options.historyIdleMs }),
     BlockContextMenu,
     SlashMenu.configure({ locale: options.locale ?? 'zh-CN' }),
     EmojiMenu,

@@ -195,30 +195,6 @@ export function defaultSlashItems(t: TesseraTranslator): SlashMenuItem[] {
       keywords: ['toc', 'outline', '目录', '大纲'],
       command: ({ editor, range }) => chainDelete(editor, range).insertToc().run(),
     },
-    {
-      id: 'placeholder-person',
-      group: 'advanced',
-      title: t('placeholderPerson'),
-      keywords: ['somebody', 'person', 'owner', '待填人'],
-      command: ({ editor, range }) => chainDelete(editor, range).insertPlaceholderToken('person', t('placeholderPerson')).run(),
-    },
-    {
-      id: 'placeholder-date',
-      group: 'advanced',
-      title: t('placeholderDate'),
-      keywords: ['date', 'due', '待填日期'],
-      command: ({ editor, range }) => chainDelete(editor, range).insertPlaceholderToken('date', t('placeholderDate')).run(),
-    },
-    {
-      id: 'history',
-      group: 'advanced',
-      title: t('itemHistory'),
-      keywords: ['history', 'version', 'snapshot', '历史', '版本'],
-      command: ({ editor, range }) => {
-        chainDelete(editor, range).run()
-        editor.emit('tessera:historyPanel', {})
-      },
-    },
   ]
 }
 

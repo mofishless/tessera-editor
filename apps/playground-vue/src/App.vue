@@ -2,10 +2,10 @@
 import { computed, ref, shallowRef } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 import { Tessera } from '@tessera-editor/vue'
-import type { TesseraLocale, UploadService, StorageService, CommentStore } from '@tessera-editor/core'
+import type { TesseraLocale, UploadService, CommentStore } from '@tessera-editor/core'
 import type { AIRuntime } from '@tessera-editor/ai'
 import { createMockRuntime } from './mockRuntime'
-import { createLocalStorage, createMemoryComments, demoIdentity } from './services'
+import { createMemoryComments, demoIdentity } from './services'
 import { initialDoc } from './doc'
 
 const locale = ref<TesseraLocale>('zh-CN')
@@ -15,7 +15,6 @@ const docSize = ref(0)
 
 const runtime = computed<AIRuntime | undefined>(() => (aiSource.value === 'mock' ? createMockRuntime() : undefined))
 
-const storage: StorageService = createLocalStorage()
 const comments: CommentStore = createMemoryComments()
 
 const mockUpload: UploadService = {
@@ -28,7 +27,7 @@ const mockUpload: UploadService = {
     }),
 }
 
-function openPanel(event: 'tessera:historyPanel' | 'tessera:commentPanel') {
+function openPanel(event: 'tessera:commentPanel') {
   editorRef.value?.emit(event, {})
 }
 
@@ -64,10 +63,8 @@ function onEditorCreate(ed: import('@tiptap/core').Editor) {
           :locale="locale"
           :content="initialDoc"
           :upload="mockUpload"
-          :storage="storage"
           :comments="comments"
           :identity="demoIdentity"
-          :history-idle-ms="90000"
           :ai="runtime"
           @create="onEditorCreate"
           @update="ed => (docSize = JSON.stringify(ed.getJSON()).length)"
@@ -79,12 +76,11 @@ function onEditorCreate(ed: import('@tiptap/core').Editor) {
           <li>与 React 绑定共用：core 预设 / AI 骨架 / 主题 CSS</li>
           <li>斜杠菜单、空行/选中工具栏、IME 守卫</li>
           <li>类型化表格（表头 ⌄ 菜单 + 类型化单元格）</li>
-          <li>版本历史（diff + 恢复）、行内评论</li>
-          <li>Embed / TOC / 占位符、块右键菜单</li>
+          <li>行内评论</li>
+          <li>Embed / TOC、块右键菜单、链接点击编辑</li>
           <li>AI：划词 ✨ Improve、/summarize、/ask + 审阅条</li>
         </ul>
         <div class="md-tools">
-          <button type="button" @click="openPanel('tessera:historyPanel')">版本历史</button>
           <button type="button" @click="openPanel('tessera:commentPanel')">评论</button>
         </div>
         <p class="meta">权威 JSON 大小：{{ docSize || '—' }} 字符</p>

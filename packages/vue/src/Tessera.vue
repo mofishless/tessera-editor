@@ -10,7 +10,6 @@ import {
 import type {
   TesseraLocale,
   UploadService,
-  StorageService,
   CommentStore,
   IdentityService,
 } from '@tessera-editor/core'
@@ -29,7 +28,6 @@ import SelectionToolbar from './SelectionToolbar.vue'
 import LinkEditor from './LinkEditor.vue'
 import FindReplacePanel from './FindReplacePanel.vue'
 import AskPanel from './AskPanel.vue'
-import HistoryPanel from './HistoryPanel.vue'
 import CommentPanel from './CommentPanel.vue'
 import BlockMenu from './BlockMenu.vue'
 import SuggestionBar from './SuggestionBar.vue'
@@ -41,11 +39,9 @@ const props = withDefaults(
     content?: unknown
     locale?: TesseraLocale
     upload?: UploadService
-    storage?: StorageService
     comments?: CommentStore
     identity?: IdentityService
     ai?: AIRuntime
-    historyIdleMs?: number
   /** v1.1: document column max-width in px. */
   docWidth?: number
   }>(),
@@ -67,7 +63,7 @@ const session = ref<SuggestionSession | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 function buildExtensions() {
-  return createTesseraExtensions({ locale: props.locale, historyIdleMs: props.historyIdleMs }).map(ext => {
+  return createTesseraExtensions({ locale: props.locale }).map(ext => {
     if (ext.name === 'tesseraSlashMenu') {
       return ext.configure({
         render: createSlashRenderer(t.value),
@@ -166,13 +162,12 @@ function syncServices() {
   ;(ed.storage as unknown as Record<string, Record<string, unknown>>).tesseraServices = {
     ...((ed.storage as unknown as Record<string, Record<string, unknown>>).tesseraServices ?? {}),
     upload: props.upload,
-    storage: props.storage,
     comments: props.comments,
     identity: props.identity,
   }
 }
 
-watch(() => [props.upload, props.storage, props.comments, props.identity], syncServices)
+watch(() => [props.upload, props.comments, props.identity], syncServices)
 
 onBeforeUnmount(() => {
   editor.value?.destroy()
@@ -208,7 +203,6 @@ provideTessera({
     <LinkEditor />
     <FindReplacePanel />
     <AskPanel />
-    <HistoryPanel />
     <CommentPanel />
     <BlockMenu />
     <SuggestionBar :session="session" @clear="session = null" />

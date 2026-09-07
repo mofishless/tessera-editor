@@ -11,7 +11,6 @@ import {
 import type {
   TesseraLocale,
   UploadService,
-  StorageService,
   CommentStore,
   IdentityService,
 } from '@tessera-editor/core'
@@ -26,7 +25,6 @@ import { EmptyLineToolbar } from './EmptyLineToolbar'
 import { LinkEditor } from './LinkEditor'
 import { SelectionToolbar } from './SelectionToolbar'
 import { FindReplacePanel, AskPanel, SuggestionBar } from './Panels'
-import { HistoryPanel } from './HistoryPanel'
 import { CommentPanel } from './CommentPanel'
 import { BlockContextMenuUI } from './BlockMenu'
 import { TesseraContext } from './context'
@@ -38,16 +36,12 @@ export interface TesseraProps {
   locale?: TesseraLocale
   /** Injected image upload capability (ADR-0001 family). */
   upload?: UploadService
-  /** v1.1: version-history snapshot storage. */
-  storage?: StorageService
   /** v1.1: inline comment persistence. */
   comments?: CommentStore
   /** v1.1: current user (comment authorship). */
   identity?: IdentityService
   /** Injected model runtime; presence enables all AI surfaces. */
   ai?: AIRuntime
-  /** v1.1: idle window for history auto-capture (playground uses short ones) */
-  historyIdleMs?: number
   /** v1.1: document column max-width in px (Slite-style centered column). */
   docWidth?: number
   onUpdate?: (editor: Editor) => void
@@ -70,11 +64,9 @@ export function Tessera({
   content,
   locale = 'zh-CN',
   upload,
-  storage,
   comments,
   identity,
   ai: runtime,
-  historyIdleMs,
   docWidth,
   onUpdate,
   onCreate,
@@ -109,7 +101,7 @@ export function Tessera({
 
   const extensions = useMemo(
     () =>
-      createTesseraExtensions({ locale, historyIdleMs }).map(ext => {
+      createTesseraExtensions({ locale }).map(ext => {
         if (ext.name === 'tesseraSlashMenu') {
           return ext.configure({
             render: createSlashRenderer(t),
@@ -142,7 +134,7 @@ export function Tessera({
     // runtime is read through runtimeRef on purpose: rebuilding the extension
     // list after mount cannot apply anyway (extensions are only read when the
     // editor is created) and would only trigger the setOptions churn above
-    [locale, t, historyIdleMs],
+    [locale, t],
   )
 
   async function uploadAndInsert(file: File) {
@@ -215,12 +207,11 @@ export function Tessera({
       ;(editor.storage as unknown as Record<string, Record<string, unknown>>).tesseraServices = {
         ...bag,
         upload,
-        storage,
         comments,
         identity,
       }
     }
-  }, [editor, upload, storage, comments, identity])
+  }, [editor, upload, comments, identity])
 
   // editor events → UI (image picker, sessions from slash AI items)
   useEffect(() => {
@@ -294,7 +285,6 @@ export function Tessera({
         <LinkEditor />
         <FindReplacePanel />
         <AskPanel />
-        <HistoryPanel />
         <CommentPanel />
         <BlockContextMenuUI />
         <SuggestionBar session={session} onClear={() => setSession(null)} />

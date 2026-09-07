@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import { Tessera } from '@tessera-editor/react'
-import type { TesseraLocale, UploadService, StorageService, CommentStore } from '@tessera-editor/core'
+import type { TesseraLocale, UploadService, CommentStore } from '@tessera-editor/core'
 import { docToMarkdown, markdownToDoc } from '@tessera-editor/core'
 import { createOpenAIRuntime } from '@tessera-editor/ai-openai'
 import type { AIRuntime } from '@tessera-editor/ai'
 import { createMockRuntime } from './mockRuntime'
-import { createLocalStorage, createMemoryComments, demoIdentity } from './services'
+import { createMemoryComments, demoIdentity } from './services'
 import { initialDoc } from './doc'
 
 type AiSource = 'mock' | 'openai' | 'off'
@@ -24,7 +24,6 @@ const mockUpload: UploadService = {
 /** live editor handle for panel-level operations (markdown import/export) */
 let editorRef: Editor | null = null
 
-const storage: StorageService = createLocalStorage()
 const comments: CommentStore = createMemoryComments()
 
 export default function App() {
@@ -85,10 +84,8 @@ export default function App() {
             locale={locale}
             content={initialDoc}
             upload={mockUpload}
-            storage={storage}
             comments={comments}
             identity={demoIdentity}
-            historyIdleMs={90_000}
             ai={runtime}
             onUpdate={editor => setDocSize(JSON.stringify(editor.getJSON()).length)}
             onCreate={editor => {
@@ -116,16 +113,6 @@ export default function App() {
             </button>
             <button type="button" onClick={() => setMdDrawer('export')}>
               导出 Markdown
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (editorRef) {
-                  editorRef.emit('tessera:historyPanel', {})
-                }
-              }}
-            >
-              版本历史
             </button>
             <button
               type="button"

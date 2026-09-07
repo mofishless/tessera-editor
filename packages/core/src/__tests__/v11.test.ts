@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
 import { Editor } from '@tiptap/core'
-import { createTesseraExtensions, tableToCsvAt, diffDocs, docToMarkdown, markdownToDoc, stableJson, listCommentRanges } from '../index'
-import type { StorageService, DocSnapshot } from '../index'
+import { createTesseraExtensions, tableToCsvAt, docToMarkdown, markdownToDoc, stableJson, listCommentRanges } from '../index'
 
 function makeEditor() {
   return new Editor({ extensions: createTesseraExtensions({ locale: 'zh-CN' }) })
@@ -104,54 +103,6 @@ describe('typed tables', () => {
     expect(mdText).toContain('data-types')
     const back = stableJson(dropTrailing(markdownToDoc(mdText, editor.state.schema)))
     expect(back).toEqual(canonical)
-    editor.destroy()
-  })
-})
-
-describe('diff', () => {
-  it('classifies added / removed / changed blocks by id', () => {
-    const before = {
-      type: 'doc',
-      content: [
-        { type: 'paragraph', attrs: { id: 'p1' }, content: [{ type: 'text', text: 'hello world' }] },
-        { type: 'paragraph', attrs: { id: 'p2' }, content: [{ type: 'text', text: 'gone' }] },
-      ],
-    }
-    const after = {
-      type: 'doc',
-      content: [
-        { type: 'paragraph', attrs: { id: 'p1' }, content: [{ type: 'text', text: 'hello there' }] },
-        { type: 'paragraph', attrs: { id: 'p3' }, content: [{ type: 'text', text: 'new block' }] },
-      ],
-    }
-    const entries = diffDocs(before, after)
-    const byId = Object.fromEntries(entries.filter(e => e.id).map(e => [e.id, e.kind]))
-    expect(byId.p1).toBe('changed')
-    expect(byId.p2).toBe('removed')
-    expect(byId.p3).toBe('added')
-    const changed = entries.find(e => e.id === 'p1')!
-    expect(changed.wordDiff?.some(p => p.type === 'del' && p.text.includes('world'))).toBe(true)
-    expect(changed.wordDiff?.some(p => p.type === 'add' && p.text.includes('there'))).toBe(true)
-  })
-})
-
-describe('history snapshots', () => {
-  it('captures into the injected storage on command', async () => {
-    const saved: DocSnapshot[] = []
-    const storage: StorageService = {
-      saveSnapshot: async snap => {
-        saved.push(snap)
-      },
-      listSnapshots: async () => saved,
-    }
-    const editor = makeEditor()
-    ;(editor.storage as unknown as Record<string, unknown>).tesseraServices = { storage }
-    editor.commands.setContent({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'v1' }] }] })
-    expect(editor.commands.captureSnapshot('manual')).toBe(true)
-    await new Promise(r => setTimeout(r, 20))
-    expect(saved).toHaveLength(1)
-    expect(saved[0]!.label).toBe('manual')
-    expect(JSON.stringify(saved[0]!.doc)).toContain('v1')
     editor.destroy()
   })
 })

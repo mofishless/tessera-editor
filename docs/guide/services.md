@@ -13,19 +13,6 @@ interface UploadService {
 
 注入后，编辑器的粘贴、拖拽与斜杠 /图片 三个入口都会走 `uploadImage`，插入返回的 URL。不注入则无上传能力（图片入口隐藏）。
 
-## StorageService（版本历史）
-
-```ts
-interface DocSnapshot { id: string; ts: number; doc: JSONContent; label?: string }
-interface StorageService {
-  saveSnapshot(snapshot: DocSnapshot): Promise<void>
-  listSnapshots(): Promise<DocSnapshot[]>
-  deleteSnapshot?(id: string): Promise<void>
-}
-```
-
-注入后启用版本历史：编辑空闲自动快照（`historyIdleMs` 可配，默认 5 分钟）+ 面板手动捕获；面板展示块级 + 词级 diff，一键恢复（单事务、可撤销）。
-
 ## CommentStore + IdentityService（行内评论）
 
 ```ts
