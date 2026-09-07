@@ -1,0 +1,87 @@
+name: 🐛 缺陷报告 / Bug report
+description: 编辑器行为与预期不符时使用
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！请先搜索现有 issue 避免重复；提供最小复现会大幅加快定位。
+        Thanks for the report! Please search existing issues first — a minimal repro helps a lot.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述 / Description
+      description: 简要说明发生了什么
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤 / Reproduction steps
+      placeholder: |
+        1. 打开编辑器，输入 '/'
+        2. 选择「代码块」
+        3. ……
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为 vs 实际行为 / Expected vs actual
+      placeholder: |
+        期望：……
+        实际：……
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: 最小复现 / Minimal repro
+      description: initialContent JSON 片段、Markdown、或从空文档出发的操作序列；截图/录屏可直接拖拽上传
+
+  - type: dropdown
+    id: binding
+    attributes:
+      label: 使用的绑定 / Binding
+      options:
+        - '@tessera-editor/react'
+        - '@tessera-editor/vue'
+        - '@tessera-editor/core（直接使用）'
+        - 不确定 / Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 包版本 / Package version
+      description: '@tessera-editor/* 的版本号或 git commit'
+      placeholder: '例：0.1.0 或 76f6baf'
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境信息 / Environment
+      placeholder: |
+        - 浏览器：Chrome 126 / Firefox …
+        - 操作系统：Windows 11 / macOS 14
+        - 框架：React 18 / Vue 3.4
+        - 是否接入 AI runtime 及适配器（如有）
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认 / Before submitting
+      options:
+        - label: 已搜索现有 issue，没有重复 / Searched existing issues, no duplicates
+          required: true
+        - label: 内容不包含敏感信息（密钥、内部地址等）/ No sensitive info included
+          required: true

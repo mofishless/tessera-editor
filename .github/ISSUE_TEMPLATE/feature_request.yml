@@ -1,0 +1,50 @@
+name: ✨ 功能建议 / Feature request
+description: 提议新能力或改进现有交互
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        项目范围参考 [docs/product-definition.md](../../blob/main/docs/product-definition.md)，行为进度见 [docs/acceptance-checklist.md](../../blob/main/docs/acceptance-checklist.md)——提案前可先确认是否已在计划内。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 使用场景 / Use case
+      description: 想解决什么问题？没有它会怎样？
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望方案 / Proposed solution
+      description: 期望的 API 或交互形态（Props、命令、快捷键、斜杠命令……）
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 备选方案 / Alternatives
+      description: 考虑过的其他做法，或现有 workaround
+
+  - type: dropdown
+    id: slite-ref
+    attributes:
+      label: Slite 是否有对应交互 / Does Slite have this?
+      description: 项目以 Slite 编辑体验为对标，附参考截图或链接会很有帮助
+      options:
+        - 有，参考见上 / Yes, reference included above
+        - 没有 / No
+        - 不确定 / Not sure
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认 / Before submitting
+      options:
+        - label: 已搜索现有 issue 与验收清单，不在计划内 / Not already tracked in issues or checklist
+          required: true
+        - label: 我愿意协助实现（提交 PR）/ Willing to help implement (PR)
+          required: false
