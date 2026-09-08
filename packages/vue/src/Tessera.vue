@@ -124,7 +124,11 @@ onMounted(() => {
     ],
     content: props.content as never,
     onUpdate: ({ editor: e }) => emit('update', e),
-    onCreate: ({ editor: e }) => emit('create', e),
+    onCreate: ({ editor: e }) => {
+      // legacy docs may carry stray hidden text in typed cells
+      e.commands.normalizeTypedCells()
+      emit('create', e)
+    },
     editorProps: {
       attributes: { class: 'tessera-doc', spellcheck: 'false' },
       handlePaste: (_view, event) => {

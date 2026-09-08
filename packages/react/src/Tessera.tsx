@@ -188,7 +188,11 @@ export function Tessera({
   )
 
   const handleUpdate = useCallback(({ editor: e }: { editor: Editor }) => onUpdateRef.current?.(e), [])
-  const handleCreate = useCallback(({ editor: e }: { editor: Editor }) => onCreateRef.current?.(e), [])
+  const handleCreate = useCallback(({ editor: e }: { editor: Editor }) => {
+    // legacy docs may carry stray hidden text in typed cells
+    e.commands.normalizeTypedCells()
+    onCreateRef.current?.(e)
+  }, [])
 
   const editor = useEditor({
     extensions,

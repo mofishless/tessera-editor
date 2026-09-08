@@ -1,5 +1,7 @@
 import type { Node as PMNode } from '@tiptap/pm/model'
+import { Plugin } from '@tiptap/pm/state'
 import type { EditorState } from '@tiptap/pm/state'
+import type { EditorProps as PMEditorProps } from '@tiptap/pm/view'
 import { Table, TableRow, TableCell, TableHeader } from '@tiptap/extension-table'
 
 /**
@@ -40,6 +42,8 @@ declare module '@tiptap/core' {
       setColumnType: (index: number, kind: TableColumnKind) => ReturnType
       /** Stable-sort body rows by column `index`. */
       sortTableByColumn: (index: number, direction: 'asc' | 'desc') => ReturnType
+      /** Strip stray hidden text from every typed (non-text) cell. */
+      normalizeTypedCells: () => ReturnType
     }
   }
 }
@@ -72,6 +76,73 @@ export function normalizeTypes(types: unknown, cols: number): TableColumnKind[] 
     list.push('text')
   }
   return list.slice(0, cols)
+}
+
+/** Kind of the column containing doc position `pos`; null outside table
+ * cells and for header cells (headers stay plain text by design). */
+export function cellKindAt(doc: PMNode, pos: number): TableColumnKind | null {
+  const $pos = doc.resolve(pos)
+  let tableDepth = -1
+  for (let depth = $pos.depth; depth > 0; depth--) {
+    if ($pos.node(depth).type.name === 'table') {
+      tableDepth = depth
+      break
+    }
+  }
+  if (tableDepth < 1 || $pos.depth < tableDepth + 2) {
+    return null
+  }
+  const cell = $pos.node(tableDepth + 2)
+  if (cell.type.name !== 'tableCell') {
+    return null
+  }
+  const table = $pos.node(tableDepth)
+  const col = $pos.index(tableDepth + 1)
+  return normalizeTypes(table.attrs.types, columnCount(table))[col] ?? 'text'
+}
+
+/** Content ranges of every typed (non-text) body cell — the text caret must
+ * not enter them; the type widget owns that content. */
+function typedCellRanges(doc: PMNode): { from: number; to: number }[] {
+  const out: { from: number; to: number }[] = []
+  doc.descendants((node, pos) => {
+    if (node.type.name !== 'table') {
+      return
+    }
+    const types = normalizeTypes(node.attrs.types, columnCount(node))
+    node.forEach((row, rowOff) => {
+      let col = 0
+      row.forEach((cell, cellOff) => {
+        const kind = types[col]
+        if (cell.type.name === 'tableCell' && kind && kind !== 'text') {
+          const base = pos + 1 + rowOff + 1 + cellOff
+          out.push({ from: base + 1, to: base + cell.nodeSize - 1 })
+        }
+        col += 1
+      })
+    })
+  })
+  return out
+}
+
+/** Wipe the hidden paragraph text of body cells in column `index` (same
+ * transaction) — used when a column becomes a typed column. */
+function clearColumnCellText(
+  tr: import('@tiptap/pm/state').Transaction,
+  schema: import('@tiptap/pm/model').Schema,
+  table: { pos: number; node: PMNode },
+  index: number,
+): void {
+  table.node.forEach((row, rowOff) => {
+    let col = 0
+    row.forEach((cell, cellOff) => {
+      if (col === index && cell.type.name === 'tableCell' && cell.textContent.trim()) {
+        const base = table.pos + 1 + rowOff + 1 + cellOff
+        tr.replaceWith(base + 1, base + cell.nodeSize - 1, schema.nodes.paragraph!.create(null))
+      }
+      col += 1
+    })
+  })
 }
 
 function cellSortValue(row: PMNode, index: number, kind: TableColumnKind): string | number | boolean | null {
@@ -148,6 +219,31 @@ export function tableNodeToCsv(table: PMNode): string {
 export const AiTable = Table.extend({
   name: 'table',
 
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        props: {
+          // typed cells are owned by their widget: never let the text caret
+          // enter the hidden paragraph, type or paste into it, and make
+          // cursor movement skip the cell as an atomic unit
+          handleTextInput: (view, from) => {
+            const kind = cellKindAt(view.state.doc, from)
+            return kind !== null && kind !== 'text'
+          },
+          handlePaste: view => {
+            const kind = cellKindAt(view.state.doc, view.state.selection.from)
+            return kind !== null && kind !== 'text'
+          },
+          handleClick: (view, pos) => {
+            const kind = cellKindAt(view.state.doc, pos)
+            return kind !== null && kind !== 'text'
+          },
+          atomicRanges: (state: EditorState) => typedCellRanges(state.doc),
+        } as PMEditorProps,
+      }),
+    ]
+  },
+
   addAttributes() {
     return {
       ...this.parent?.(),
@@ -196,9 +292,43 @@ export const AiTable = Table.extend({
           types[index] = kind
           if (dispatch) {
             tr.setNodeMarkup(table.pos, undefined, { ...table.node.attrs, types })
+            // the widget owns the content of typed cells from now on — drop
+            // any stray hidden text the column may still carry
+            if (kind !== 'text') {
+              clearColumnCellText(tr, state.schema, table, index)
+            }
             dispatch(tr)
           }
           return true
+        },
+      normalizeTypedCells:
+        () =>
+        ({ state, dispatch, tr }) => {
+          const edits: { from: number; to: number }[] = []
+          state.doc.descendants((node, pos) => {
+            if (node.type.name !== 'table') {
+              return
+            }
+            const types = normalizeTypes(node.attrs.types, columnCount(node))
+            node.forEach((row, rowOff) => {
+              let col = 0
+              row.forEach((cell, cellOff) => {
+                const kind = types[col]
+                if (cell.type.name === 'tableCell' && kind && kind !== 'text' && cell.textContent.trim()) {
+                  const base = pos + 1 + rowOff + 1 + cellOff
+                  edits.push({ from: base + 1, to: base + cell.nodeSize - 1 })
+                }
+                col += 1
+              })
+            })
+          })
+          if (dispatch && edits.length) {
+            for (const e of [...edits].reverse()) {
+              tr.replaceWith(e.from, e.to, state.schema.nodes.paragraph!.create(null))
+            }
+            dispatch(tr)
+          }
+          return edits.length > 0
         },
       sortTableByColumn:
         (index: number, direction: 'asc' | 'desc') =>
