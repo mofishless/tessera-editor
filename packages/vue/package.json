@@ -1,6 +1,6 @@
 {
   "name": "@tessera-editor/vue",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tessera Vue 3 binding with the full default UI",
   "license": "MIT",
   "type": "module",

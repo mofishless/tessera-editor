@@ -1,5 +1,17 @@
 # @tessera-editor/core
 
+## 0.2.0
+
+### Minor Changes
+
+- Host configuration surface for real-product embedding:
+
+  - `placeholder?: string` + `messages?: TesseraMessageOverrides` — custom empty-paragraph hint and per-key UI string overrides.
+  - `excludeBlocks?: string[]` — host block policy: excluded node types are dropped from the extension preset, the slash menu, UniqueID's id list and the keyboard shortcuts that produce them (core preset + `SlashMenu.excludeItems`); `SUPPORTED_BLOCK_TYPES` exported as the host-side whitelist reference.
+  - `createTesseraSchema(options)` — headless ProseMirror schema factory (format conversion without instantiating an editor).
+  - Re-exports `Editor` / `JSONContent` types so hosts don't need a direct `@tiptap/core` dependency.
+  - The block context menu no longer opens on read-only editors. (`editable` / `extraSelectionItems` are binding-level props: see `@tessera-editor/react` / `@tessera-editor/vue`.)
+
 ## 0.1.0
 
 ### Minor Changes

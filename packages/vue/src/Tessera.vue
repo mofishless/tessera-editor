@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import type { VNode } from 'vue'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import { DragHandle } from '@tiptap/extension-drag-handle'
 import { createEmojiRenderer } from './emojiRenderer'
@@ -9,6 +10,7 @@ import {
 } from '@tessera-editor/core'
 import type {
   TesseraLocale,
+  TesseraMessageOverrides,
   UploadService,
   CommentStore,
   IdentityService,
@@ -38,14 +40,30 @@ const props = withDefaults(
   defineProps<{
     content?: unknown
     locale?: TesseraLocale
+    /** Empty-paragraph placeholder text (default: the i18n `placeholderEmpty` string). */
+    placeholder?: string
+    /** Per-key overrides of the built-in UI dictionary (slash items, tooltips…). */
+    messages?: TesseraMessageOverrides
+    /** Render the editor read-only (default: editable). Live-toggleable. */
+    editable?: boolean
+    /**
+     * Host block policy: top-level block types to exclude entirely (see
+     * `TesseraPresetOptions.excludeBlocks`). Read once at editor creation.
+     */
+    excludeBlocks?: string[]
     upload?: UploadService
     comments?: CommentStore
     identity?: IdentityService
     ai?: AIRuntime
-  /** v1.1: document column max-width in px. */
-  docWidth?: number
+    /** v1.1: document column max-width in px. */
+    docWidth?: number
+    /**
+     * Host buttons appended to the selection toolbar (e.g. custom AI actions).
+     * A render function receives the live editor + translator.
+     */
+    extraSelectionItems?: VNode | ((ctx: { editor: Editor; t: ReturnType<typeof createTesseraT> }) => VNode)
   }>(),
-  { locale: 'zh-CN' },
+  { locale: 'zh-CN', editable: true },
 )
 
 const emit = defineEmits<{
@@ -63,7 +81,12 @@ const session = ref<SuggestionSession | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 function buildExtensions() {
-  return createTesseraExtensions({ locale: props.locale }).map(ext => {
+  return createTesseraExtensions({
+    locale: props.locale,
+    placeholder: props.placeholder,
+    messages: props.messages,
+    excludeBlocks: props.excludeBlocks,
+  }).map(ext => {
     if (ext.name === 'tesseraSlashMenu') {
       return ext.configure({
         render: createSlashRenderer(t.value),
@@ -107,6 +130,7 @@ async function uploadAndInsert(file: File) {
 
 onMounted(() => {
   const ed = new Editor({
+    editable: props.editable,
     extensions: [
       ...buildExtensions().map(ext =>
         ext.name === 'tesseraEmojiMenu'
@@ -173,6 +197,12 @@ function syncServices() {
 
 watch(() => [props.upload, props.comments, props.identity], syncServices)
 
+// read-only is a live toggle, not just an initial option
+watch(
+  () => props.editable,
+  value => editor.value?.setEditable(value !== false),
+)
+
 onBeforeUnmount(() => {
   editor.value?.destroy()
   editor.value = null
@@ -196,11 +226,14 @@ provideTessera({
   get ai() {
     return aiController.value
   },
+  get extraSelectionItems() {
+    return props.extraSelectionItems
+  },
 } as never)
 </script>
 
 <template>
-  <div v-if="editor" class="tessera-root">
+  <div v-if="editor" class="tessera-root" :data-readonly="editable ? undefined : 'true'">
     <EditorContent :editor="editor" />
     <EmptyLineToolbar />
     <SelectionToolbar @session="s => (session = s)" />

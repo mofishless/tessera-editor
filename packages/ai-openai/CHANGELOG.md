@@ -1,5 +1,11 @@
 # @tessera-editor/ai-openai
 
+## 0.1.1
+
+### Patch Changes
+
+- @tessera-editor/ai@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes

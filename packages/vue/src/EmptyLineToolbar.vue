@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { defaultSlashItems } from '@tessera-editor/core'
+import { defaultSlashItems, filterSlashItems } from '@tessera-editor/core'
 import type { SlashMenuItem } from '@tessera-editor/core'
 import { useTesseraContext } from './context'
 import { useTesseraPortalRoot } from './portal'
@@ -39,7 +39,13 @@ watch(
   { flush: 'post' },
 )
 
-const items = computed(() => defaultSlashItems(t))
+// mirrors the slash menu, minus host-excluded blocks (read from the mounted
+// SlashMenu options so both entry points stay in sync)
+const items = computed(() => {
+  const slash = editor.extensionManager.extensions.find(ext => ext.name === 'tesseraSlashMenu')
+  const excluded = (slash?.options as { excludeItems?: string[] } | undefined)?.excludeItems
+  return filterSlashItems(defaultSlashItems(t), excluded)
+})
 
 function hideAll() {
   style.value = null

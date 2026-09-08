@@ -296,9 +296,18 @@ export const tesseraMessages = {
 
 export type TesseraMessageKey = keyof typeof tesseraMessages['zh-CN']
 
+/** Host-side overrides of individual UI strings (merged over the dictionary). */
+export type TesseraMessageOverrides = Partial<Record<TesseraMessageKey, string>>
+
 export type TesseraTranslator = (key: TesseraMessageKey) => string
 
-export function createTesseraT(locale: TesseraLocale = 'zh-CN'): TesseraTranslator {
-  const table = tesseraMessages[locale] ?? tesseraMessages['zh-CN']
-  return key => (table as Record<string, string | ((n: number) => string)>)[key] as string ?? key
+export function createTesseraT(
+  locale: TesseraLocale = 'zh-CN',
+  overrides?: TesseraMessageOverrides,
+): TesseraTranslator {
+  const table: Record<string, string | ((n: number) => string)> = {
+    ...((tesseraMessages[locale] ?? tesseraMessages['zh-CN']) as Record<string, string | ((n: number) => string)>),
+    ...(overrides as Record<string, string> | undefined),
+  }
+  return key => (table[key] as string) ?? key
 }

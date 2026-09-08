@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
-import { defaultSlashItems } from '@tessera-editor/core'
+import { defaultSlashItems, filterSlashItems } from '@tessera-editor/core'
 import type { SlashMenuItem, TesseraTranslator } from '@tessera-editor/core'
 import { aiSlashItems } from '@tessera-editor/ai'
 import type { Editor } from '@tiptap/react'
@@ -17,18 +17,15 @@ import { useTesseraPortalRoot } from './portal'
  * hide, nor move the toolbar (M0 spike finding).
  */
 
-function buildItems(editor: Editor, t: TesseraTranslator, hasAi: boolean): SlashMenuItem[] {
-  const base = defaultSlashItems(t)
-  if (!hasAi) {
-    return base
-  }
-  // AI items need a runtime; context provides it — reconstructed here via
-  // context injection from the parent (see useItems below).
-  return base
+/** The expanded panel mirrors the slash menu, minus host-excluded blocks. */
+function buildItems(editor: Editor, t: TesseraTranslator): SlashMenuItem[] {
+  const slash = editor.extensionManager.extensions.find(ext => ext.name === 'tesseraSlashMenu')
+  const excluded = (slash?.options as { excludeItems?: string[] } | undefined)?.excludeItems
+  return filterSlashItems(defaultSlashItems(t), excluded)
 }
 
 export function EmptyLineToolbar() {
-  const { editor, t, ai } = useContext(TesseraContext)!
+  const { editor, t } = useContext(TesseraContext)!
   const [style, setStyle] = useState<CSSProperties | null>(null)
   const [expanded, setExpanded] = useState(false)
   const [panelPlacement, setPanelPlacement] = useState<'bottom' | 'top'>('bottom')
@@ -147,7 +144,7 @@ export function EmptyLineToolbar() {
     return null
   }
 
-  const items = buildItems(editor, t, !!ai)
+  const items = buildItems(editor, t)
 
   const runItem = (item: SlashMenuItem) => {
     const { $from } = editor.state.selection

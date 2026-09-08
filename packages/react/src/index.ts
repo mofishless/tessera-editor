@@ -1,5 +1,7 @@
 export { Tessera } from './Tessera'
 export type { TesseraProps } from './Tessera'
+export type { Editor } from '@tiptap/react'
+export type { Content, JSONContent } from '@tiptap/core'
 export { EmptyLineToolbar } from './EmptyLineToolbar'
 export { SelectionToolbar } from './SelectionToolbar'
 export { SlashMenuView, createSlashRenderer } from './SlashMenu'

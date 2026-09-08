@@ -1,5 +1,24 @@
 # @tessera-editor/react
 
+## 0.2.0
+
+### Minor Changes
+
+- Host configuration surface for real-product embedding:
+
+  - `editable?: boolean` — render the editor read-only (default `true`).
+  - `placeholder?: string` + `messages?: TesseraMessageOverrides` — custom empty-paragraph hint and per-key UI string overrides.
+  - `excludeBlocks?: string[]` — host block policy: excluded node types are dropped from the extension preset, the slash menu, UniqueID's id list and the keyboard shortcuts that produce them (core preset + `SlashMenu.excludeItems`).
+  - `extraSelectionItems?: ReactNode` — host buttons appended to the selection toolbar (e.g. custom AI actions); comment/collapsible buttons are now capability-gated.
+  - `createTesseraSchema(options)` — headless ProseMirror schema factory (format conversion without instantiating an editor).
+  - Re-exports `Editor` / `JSONContent` types so hosts don't need a direct `@tiptap/core` dependency.
+
+### Patch Changes
+
+- Updated dependencies
+  - @tessera-editor/core@0.2.0
+  - @tessera-editor/ai@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes

@@ -30,10 +30,51 @@ export interface SlashMenuOptions {
   extraItems?: (ctx: { editor: Editor; t: TesseraTranslator }) => SlashMenuItem[]
   includeAiItems?: boolean
   render?: SlashRenderFactory
+  /**
+   * Host block policy (mirrors `TesseraPresetOptions.excludeBlocks`): drop
+   * default items whose node type is excluded, so the menu never offers a
+   * block the editor cannot represent.
+   */
+  excludeItems?: string[]
 }
 
 function chainDelete(editor: Editor, range: Range) {
   return editor.chain().focus().deleteRange(range)
+}
+
+/** Slash item id → the node type it produces. */
+export function slashItemNodeName(item: SlashMenuItem): string {
+  switch (item.id) {
+    case 'divider':
+      return 'horizontalRule'
+    case 'embed':
+      return 'embedBlock'
+    case 'toc':
+      return 'tocBlock'
+    case 'image':
+      return 'imageBlock'
+    case 'table':
+    case 'table-simple':
+      return 'table'
+    case 'h1':
+    case 'h2':
+    case 'h3':
+    case 'h4':
+      return 'heading'
+    case 'text':
+      return 'paragraph'
+    default:
+      return item.id
+  }
+}
+
+/** Drop default items whose node type is excluded by the host. */
+export function filterSlashItems(items: SlashMenuItem[], excludeBlocks?: string[]): SlashMenuItem[] {
+  if (!excludeBlocks || excludeBlocks.length === 0) {
+    return items
+  }
+  const excluded = new Set(excludeBlocks)
+  return items.filter(item => !excluded.has(slashItemNodeName(item)))
 }
 
 /** Default block items — mirrors the Slite slash palette for the M1 scope. */
@@ -207,6 +248,7 @@ export const SlashMenu = Extension.create<SlashMenuOptions>({
       extraItems: undefined,
       includeAiItems: false,
       render: undefined,
+      excludeItems: undefined,
     }
   },
 
@@ -216,7 +258,7 @@ export const SlashMenu = Extension.create<SlashMenuOptions>({
     const t = createTesseraT(options.locale)
 
     const items = [
-      ...defaultSlashItems(t),
+      ...filterSlashItems(defaultSlashItems(t), options.excludeItems),
       ...(options.extraItems?.({ editor, t }) ?? []),
     ]
 

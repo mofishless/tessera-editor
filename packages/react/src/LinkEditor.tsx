@@ -29,6 +29,14 @@ export function LinkEditor() {
         setRange(null)
         return
       }
+      // read-only: a link click opens the target instead of the editor panel
+      if (!editor.isEditable) {
+        const href = anchor.getAttribute('href')
+        if (href) {
+          window.open(href, '_blank', 'noopener,noreferrer')
+        }
+        return
+      }
       const found = findLinkRange(editor, editor.view.posAtDOM(anchor, 0))
       if (found) openPanel(found)
     }

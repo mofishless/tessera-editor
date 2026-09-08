@@ -68,12 +68,17 @@ function FlipPopover({
 }
 
 export function SelectionToolbar({ onSession }: { onSession: (session: SuggestionSession | null) => void }) {
-  const { editor, t, ai } = useContext(TesseraContext)!
+  const { editor, t, ai, extraSelectionItems } = useContext(TesseraContext)!
   const [style, setStyle] = useState<CSSProperties | null>(null)
   const [popover, setPopover] = useState<PopoverKind>(null)
   const [linkValue, setLinkValue] = useState('')
   const composingRef = useRef(false)
   const portalRoot = useTesseraPortalRoot(editor)
+  // Capability-gated buttons: comments need a CommentStore, the collapsible
+  // button needs the collapsible node (hosts may exclude it).
+  const services = (editor.storage as unknown as Record<string, Record<string, unknown>>).tesseraServices
+  const hasComments = !!services?.comments
+  const hasCollapsible = editor.extensionManager.extensions.some(ext => ext.name === 'collapsible')
 
   const reposition = useCallback(() => {
     if (composingRef.current || !editor.isFocused) {
@@ -185,19 +190,24 @@ export function SelectionToolbar({ onSession }: { onSession: (session: Suggestio
       <TbBtn title={t('tooltipLink')} active={editor.isActive('link')} onClick={() => setPopover(p => (p === 'link' ? null : 'link'))}>
         🔗
       </TbBtn>
-      <TbBtn
-        title={t('tooltipCommentV11')}
-        active={editor.isActive('comment')}
-        onClick={() => setPopover(p => (p === 'comment' ? null : 'comment'))}
-      >
-        💬
-      </TbBtn>
-      <TbBtn title={t('tooltipTurnCollapsible')} onClick={() => chain().insertCollapsible().run()}>
-        ▸
-      </TbBtn>
+      {hasComments ? (
+        <TbBtn
+          title={t('tooltipCommentV11')}
+          active={editor.isActive('comment')}
+          onClick={() => setPopover(p => (p === 'comment' ? null : 'comment'))}
+        >
+          💬
+        </TbBtn>
+      ) : null}
+      {hasCollapsible ? (
+        <TbBtn title={t('tooltipTurnCollapsible')} onClick={() => chain().insertCollapsible().run()}>
+          ▸
+        </TbBtn>
+      ) : null}
       <TbBtn title={t('tooltipMore')} onClick={() => setPopover(p => (p === 'more' ? null : 'more'))}>
         ⋯
       </TbBtn>
+      {typeof extraSelectionItems === 'function' ? extraSelectionItems({ editor, t }) : extraSelectionItems}
 
       {popover === 'color' ? (
         <FlipPopover posKey={style}>

@@ -1,6 +1,23 @@
 # @tessera-editor/vue
 
-## 0.1.0
+## 0.2.0
+
+### Minor Changes
+
+- Host configuration surface, feature-matched with the React binding:
+
+  - `editable?: boolean` — render the editor read-only (default `true`); live-toggleable via `setEditable`, with the drag handle / column menu / link panel gated and read-only link clicks opening the target.
+  - `placeholder?: string` + `messages?: TesseraMessageOverrides` — custom empty-paragraph hint and per-key UI string overrides.
+  - `excludeBlocks?: string[]` — host block policy: excluded node types are dropped from the extension preset, the slash menu, the empty-line toolbar and the keyboard shortcuts that produce them.
+  - `extraSelectionItems?: VNode | ((ctx) => VNode)` — host buttons appended to the selection toolbar (e.g. custom AI actions); comment/collapsible buttons are now capability-gated.
+
+### Patch Changes
+
+- Updated dependencies
+  - @tessera-editor/core@0.2.0
+  - @tessera-editor/ai@0.1.1
+
+## 0.1.1
 
 ### Minor Changes
 

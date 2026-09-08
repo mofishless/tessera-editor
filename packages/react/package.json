@@ -1,6 +1,6 @@
 {
   "name": "@tessera-editor/react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tessera React binding with the full default UI",
   "license": "MIT",
   "type": "module",

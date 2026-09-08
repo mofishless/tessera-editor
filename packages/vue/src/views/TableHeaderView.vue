@@ -49,6 +49,11 @@ onMounted(() => window.addEventListener('mousedown', onWindowMouseDown))
 onBeforeUnmount(() => window.removeEventListener('mousedown', onWindowMouseDown))
 
 function run(fn: () => unknown) {
+  // read-only docs must not mutate, however the menu was triggered
+  if (!editor.isEditable) {
+    open.value = false
+    return
+  }
   open.value = false
   const pos = props.getPos()
   if (typeof pos === 'number') {

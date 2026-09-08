@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
+import type { VNode } from 'vue'
 import { docToMarkdown } from '@tessera-editor/core'
 import { IMPROVE_PRESETS, improveSelection } from '@tessera-editor/ai'
 import type { SuggestionSession } from '@tessera-editor/ai'
@@ -10,7 +11,7 @@ import CommentComposer from './CommentComposer.vue'
 
 const emit = defineEmits<{ (e: 'session', s: SuggestionSession | null): void }>()
 
-const { editor, t, locale, ai } = useTesseraContext()
+const { editor, t, locale, ai, extraSelectionItems } = useTesseraContext()
 const portalRoot = useTesseraPortalRoot(editor)
 const style = ref<{ top: string; left: string } | null>(null)
 const popover = ref<null | 'color' | 'highlight' | 'link' | 'improve' | 'more' | 'comment'>(null)
@@ -22,6 +23,25 @@ let composing = false
 
 const TEXT_COLORS = ['#262629', '#d9414f', '#e8912d', '#31a56f', '#2f9ea8', '#4f6df5', '#7a4fd8', '#98a0ab']
 const HIGHLIGHT_COLORS = ['#fff2a8', '#d6eaff', '#d3f5df', '#fdd9e7', '#e6dcff']
+
+// Capability-gated buttons: comments need a CommentStore, the collapsible
+// button needs the collapsible node (hosts may exclude it). Read on each
+// render — the services bag is plain storage, not reactive state.
+function hasComments(): boolean {
+  const services = (editor.storage as unknown as Record<string, Record<string, unknown>>).tesseraServices
+  return !!services?.comments
+}
+const hasCollapsible = editor.extensionManager.extensions.some(ext => ext.name === 'collapsible')
+
+/** Vue templates cannot place raw VNodes — this renders the host's items. */
+const VNodeHost = defineComponent({
+  props: { nodes: { type: Array as () => VNode[], required: true } },
+  setup: hostProps => () => hostProps.nodes,
+})
+const extraNodes = computed<VNode[]>(() => {
+  const item = typeof extraSelectionItems === 'function' ? extraSelectionItems({ editor, t }) : extraSelectionItems
+  return item ? [item] : []
+})
 
 const chain = () => editor.chain().focus()
 const currentColor = computed(() => (editor.getAttributes('textStyle').color as string | undefined) ?? null)
@@ -150,9 +170,10 @@ onBeforeUnmount(() => {
         <span class="tessera-tb-colorchip" style="background: #fff2a8" />
       </button>
       <button type="button" class="tessera-tb-btn" :data-active="editor.isActive('link')" :title="t('tooltipLink')" @click="popover = popover === 'link' ? null : 'link'">🔗</button>
-      <button type="button" class="tessera-tb-btn" :title="t('tooltipCommentV11')" @click="popover = popover === 'comment' ? null : 'comment'">💬</button>
-      <button type="button" class="tessera-tb-btn" :title="t('tooltipTurnCollapsible')" @click="chain().insertCollapsible().run()">▸</button>
+      <button v-if="hasComments()" type="button" class="tessera-tb-btn" :title="t('tooltipCommentV11')" @click="popover = popover === 'comment' ? null : 'comment'">💬</button>
+      <button v-if="hasCollapsible" type="button" class="tessera-tb-btn" :title="t('tooltipTurnCollapsible')" @click="chain().insertCollapsible().run()">▸</button>
       <button type="button" class="tessera-tb-btn" :title="t('tooltipMore')" @click="popover = popover === 'more' ? null : 'more'">⋯</button>
+      <VNodeHost v-if="extraNodes.length" :nodes="extraNodes" />
 
       <FlipPopover v-if="popover === 'color'" :watch-key="style">
         <button type="button" class="tessera-color-swatch tessera-color-none" :title="t('colorDefault')" @click="chain().unsetColor().run()" />

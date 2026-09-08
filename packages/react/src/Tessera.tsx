@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import type { Editor } from '@tiptap/react'
 import type { Content, EditorOptions } from '@tiptap/core'
@@ -10,6 +10,8 @@ import {
 } from '@tessera-editor/core'
 import type {
   TesseraLocale,
+  TesseraMessageOverrides,
+  TesseraTranslator,
   UploadService,
   CommentStore,
   IdentityService,
@@ -34,6 +36,17 @@ export interface TesseraProps {
   /** Initial document (JSON / HTML / markdown string). Host owns persistence. */
   content?: Content
   locale?: TesseraLocale
+  /** Empty-paragraph placeholder text (default: the i18n `placeholderEmpty` string). */
+  placeholder?: string
+  /** Per-key overrides of the built-in UI dictionary (slash items, tooltips…). */
+  messages?: TesseraMessageOverrides
+  /** Render the editor read-only (default: editable). */
+  editable?: boolean
+  /**
+   * Host block policy: top-level block types to exclude entirely (see
+   * `TesseraPresetOptions.excludeBlocks`). Read once at editor creation.
+   */
+  excludeBlocks?: string[]
   /** Injected image upload capability (ADR-0001 family). */
   upload?: UploadService
   /** v1.1: inline comment persistence. */
@@ -44,6 +57,12 @@ export interface TesseraProps {
   ai?: AIRuntime
   /** v1.1: document column max-width in px (Slite-style centered column). */
   docWidth?: number
+  /**
+   * Host buttons appended to the selection toolbar (e.g. custom AI actions).
+   * A render function receives the live editor + translator, so a host button
+   * like 「让 AI 改写此段」 can read the current selection on click.
+   */
+  extraSelectionItems?: ReactNode | ((ctx: { editor: Editor; t: TesseraTranslator }) => ReactNode)
   onUpdate?: (editor: Editor) => void
   onCreate?: (editor: Editor) => void
 }
@@ -63,15 +82,19 @@ const DRAG_HANDLE_POSITION_CONFIG = { placement: 'left', strategy: 'absolute' } 
 export function Tessera({
   content,
   locale = 'zh-CN',
+  placeholder,
+  messages,
+  editable = true,
+  excludeBlocks,
   upload,
   comments,
   identity,
   ai: runtime,
   docWidth,
+  extraSelectionItems,
   onUpdate,
   onCreate,
 }: TesseraProps) {
-  const t = useMemo(() => createTesseraT(locale), [locale])
   const [session, setSession] = useState<SuggestionSession | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   type DragNodeData = {
@@ -89,19 +112,35 @@ export function Tessera({
   // destroys and recreates ALL plugin views. A recreated suggestion view
   // starts from an already-active state with no "started" transition, so
   // renderer.onStart never fires and the slash menu UI never mounts.
-  // Latest prop values are therefore read through refs instead.
+  // Latest prop values are therefore read through refs instead — this also
+  // applies to `messages`/`placeholder`/`excludeBlocks`, which hosts may pass
+  // as inline literals. Config is read once at editor creation; later changes
+  // require remounting the component.
   const onUpdateRef = useRef(onUpdate)
   onUpdateRef.current = onUpdate
   const onCreateRef = useRef(onCreate)
   onCreateRef.current = onCreate
   const runtimeRef = useRef(runtime)
   runtimeRef.current = runtime
+  const placeholderRef = useRef(placeholder)
+  placeholderRef.current = placeholder
+  const messagesRef = useRef(messages)
+  messagesRef.current = messages
+  const excludeBlocksRef = useRef(excludeBlocks)
+  excludeBlocksRef.current = excludeBlocks
   const initialContentRef = useRef(content)
   const editorRef = useRef<Editor | null>(null)
 
+  const t = useMemo(() => createTesseraT(locale, messagesRef.current), [locale])
+
   const extensions = useMemo(
     () =>
-      createTesseraExtensions({ locale }).map(ext => {
+      createTesseraExtensions({
+        locale,
+        placeholder: placeholderRef.current,
+        messages: messagesRef.current,
+        excludeBlocks: excludeBlocksRef.current,
+      }).map(ext => {
         if (ext.name === 'tesseraSlashMenu') {
           return ext.configure({
             render: createSlashRenderer(t),
@@ -197,6 +236,7 @@ export function Tessera({
   const editor = useEditor({
     extensions,
     content: initialContentRef.current,
+    editable,
     onUpdate: handleUpdate,
     onCreate: handleCreate,
     editorProps,
@@ -216,6 +256,13 @@ export function Tessera({
       }
     }
   }, [editor, upload, comments, identity])
+
+  // read-only is a live toggle, not just an initial option
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(editable)
+    }
+  }, [editor, editable])
 
   // editor events → UI (image picker, sessions from slash AI items)
   useEffect(() => {
@@ -242,9 +289,10 @@ export function Tessera({
   }
 
   return (
-    <TesseraContext.Provider value={{ editor, locale, t, ai }}>
+    <TesseraContext.Provider value={{ editor, locale, t, ai, extraSelectionItems }}>
       <div
         className="tessera-root"
+        data-readonly={editable ? undefined : 'true'}
         style={{ '--te-doc-max-width': docWidth ? `${docWidth}px` : undefined } as CSSProperties}
       >
         <EditorContent editor={editor} />

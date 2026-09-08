@@ -94,6 +94,11 @@ function AiTableHeaderView(props: NodeViewProps) {
   }, [open])
 
   const run = (fn: () => unknown) => {
+    // read-only docs must not mutate, however the menu was triggered
+    if (!editor.isEditable) {
+      setOpen(false)
+      return
+    }
     setOpen(false)
     // re-select into this cell so table commands locate the table
     const pos = props.getPos()

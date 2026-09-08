@@ -15,8 +15,13 @@ export const BlockContextMenu = Extension.create({
       new Plugin({
         props: {
           handleDOMEvents: {
-            contextmenu: (view, event) => {
-              const coords = view.posAtCoords({ left: event.clientX, top: event.clientY })
+          contextmenu: (view, event) => {
+            // read-only docs keep the native context menu (copy link, …) —
+            // the Tessera menu's actions would mutate a frozen document
+            if (!editor.isEditable) {
+              return false
+            }
+            const coords = view.posAtCoords({ left: event.clientX, top: event.clientY })
               if (!coords) {
                 return false
               }

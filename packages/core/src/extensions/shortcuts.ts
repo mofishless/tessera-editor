@@ -46,6 +46,10 @@ export const TesseraShortcuts = Extension.create({
   },
 
   addKeyboardShortcuts() {
+    // Hosts may exclude block types (preset `excludeBlocks`); the commands an
+    // excluded node registers don't exist, so guard before calling.
+    const has = (name: string): boolean =>
+      this.editor.extensionManager.extensions.some(ext => ext.name === name)
     return {
       'Mod-Shift-1': () => this.editor.commands.toggleHeading({ level: 1 }),
       'Mod-Shift-2': () => this.editor.commands.toggleHeading({ level: 2 }),
@@ -53,8 +57,8 @@ export const TesseraShortcuts = Extension.create({
       'Mod-Shift-4': () => this.editor.commands.toggleHeading({ level: 4 }),
       'Mod-Shift-7': () => this.editor.commands.toggleOrderedList(),
       'Mod-Shift-8': () => this.editor.commands.toggleBulletList(),
-      'Mod-Shift-c': () => this.editor.commands.toggleTaskList(),
-      'Mod-Alt-h': () => this.editor.commands.toggleHint(),
+      'Mod-Shift-c': () => has('taskList') && this.editor.commands.toggleTaskList(),
+      'Mod-Alt-h': () => has('hint') && this.editor.commands.toggleHint(),
       'Mod-j': () => this.editor.commands.toggleCode(),
       'Mod-Shift-9': () => this.editor.commands.toggleCodeBlock(),
       'Mod-Shift-.': () => this.editor.commands.toggleBlockquote(),
@@ -74,8 +78,8 @@ export const TesseraShortcuts = Extension.create({
         this.editor.emit('tessera:askPanel', {})
         return true
       },
-      'Mod-Alt-s': () => this.editor.commands.insertTableTyped({ withHeaderRow: true }),
-      'Mod-Alt-t': () => this.editor.commands.insertTableTyped({ withHeaderRow: false }),
+      'Mod-Alt-s': () => has('table') && this.editor.commands.insertTableTyped({ withHeaderRow: true }),
+      'Mod-Alt-t': () => has('table') && this.editor.commands.insertTableTyped({ withHeaderRow: false }),
       'Mod-Alt-m': () => {
         this.editor.emit('tessera:commentPanel', {})
         return true

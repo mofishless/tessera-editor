@@ -1483,3 +1483,21 @@
   user-select: none;
   padding: 2px;
 }
+
+/* ---------- read-only mode (host passes `editable={false}`) ---------- */
+
+/* the doc can't be focused, so toolbars/menus never trigger; hide what would
+   still render. The drag handle floats outside .tessera-root (body-appended),
+   hence the :has() form. */
+.tessera-root[data-readonly='true'] .tessera-doc {
+  cursor: default;
+}
+.tessera-root[data-readonly='true'] .tessera-doc a {
+  cursor: pointer;
+}
+.tessera-root[data-readonly='true'] .tessera-col-menu-btn {
+  display: none;
+}
+body:has(.tessera-root[data-readonly='true']) .drag-handle {
+  display: none !important;
+}

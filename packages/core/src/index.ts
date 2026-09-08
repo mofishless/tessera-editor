@@ -18,7 +18,7 @@ export { TesseraInputRules } from './extensions/input-rules'
 export { TesseraShortcuts } from './extensions/shortcuts'
 export { TesseraFindReplace, findReplaceKey } from './extensions/find-replace'
 export type { FindMatch, FindReplaceState } from './extensions/find-replace'
-export { SlashMenu, defaultSlashItems } from './extensions/slash'
+export { SlashMenu, defaultSlashItems, filterSlashItems, slashItemNodeName } from './extensions/slash'
 export type { SlashMenuItem, SlashMenuOptions, SlashRenderFactory } from './extensions/slash'
 export { EmojiMenu, EMOJI_ITEMS, filterEmojiItems } from './extensions/emoji'
 export type { EmojiItem, EmojiMenuOptions } from './extensions/emoji'
@@ -33,12 +33,17 @@ export { findLinkRange, saveLinkRange, removeLinkRange } from './linkedit'
 export type { TesseraLinkRange } from './linkedit'
 
 // preset
-export { createTesseraExtensions, ID_BLOCK_TYPES } from './preset'
+export { createTesseraExtensions, createTesseraSchema, ID_BLOCK_TYPES, SUPPORTED_BLOCK_TYPES } from './preset'
 export type { TesseraPresetOptions } from './preset'
 
 // i18n
 export { createTesseraT, tesseraMessages } from './i18n'
-export type { TesseraLocale, TesseraMessageKey, TesseraTranslator } from './i18n'
+export type { TesseraLocale, TesseraMessageKey, TesseraMessageOverrides, TesseraTranslator } from './i18n'
+
+// re-exported host-facing types (hosts build on these without a direct
+// @tiptap/core dependency)
+export type { Editor } from '@tiptap/core'
+export type { JSONContent } from '@tiptap/core'
 
 // services
 export {
