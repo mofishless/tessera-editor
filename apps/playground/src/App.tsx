@@ -10,6 +10,10 @@ import { createMemoryComments, demoIdentity } from './services'
 import { initialDoc } from './doc'
 
 type AiSource = 'mock' | 'openai' | 'off'
+type HostMode = 'full' | 'specflow'
+
+/** SpecFlow BlockDocGuard keeps nine block families; these five are excluded. */
+const SPECFLOW_EXCLUDED = ['hint', 'collapsible', 'embedBlock', 'tocBlock', 'horizontalRule']
 
 const mockUpload: UploadService = {
   uploadImage: file =>
@@ -32,6 +36,20 @@ export default function App() {
   const [aiSource, setAiSource] = useState<AiSource>('mock')
   const [openai, setOpenai] = useState({ baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini', apiKey: '' })
   const [mdDrawer, setMdDrawer] = useState<'import' | 'export' | null>(null)
+  const [editable, setEditable] = useState(true)
+  const [hostMode, setHostMode] = useState<HostMode>('full')
+  const [hostMsg, setHostMsg] = useState<string | null>(null)
+  const specflow = hostMode === 'specflow'
+  const hostContent = useMemo(
+    () =>
+      specflow
+        ? {
+            ...initialDoc,
+            content: initialDoc.content.filter(node => !SPECFLOW_EXCLUDED.includes(node.type)),
+          }
+        : initialDoc,
+    [specflow],
+  )
 
   const runtime: AIRuntime | undefined = useMemo(() => {
     if (aiSource === 'mock') {
@@ -52,6 +70,17 @@ export default function App() {
         </div>
         <div className="sub">M1+M2 · TipTap 3.31 · React 18 · AI Runtime 注入式</div>
         <div className="header-actions">
+          <label className="toggle-control">
+            <input type="checkbox" checked={editable} onChange={e => setEditable(e.target.checked)} />
+            可编辑
+          </label>
+          <label className="mode-control">
+            <span>宿主预设</span>
+            <select value={hostMode} onChange={e => setHostMode(e.target.value as HostMode)}>
+              <option value="full">完整能力</option>
+              <option value="specflow">SpecFlow 白名单</option>
+            </select>
+          </label>
           <button type="button" onClick={() => setLocale(l => (l === 'zh-CN' ? 'en-US' : 'zh-CN'))}>
             {locale === 'zh-CN' ? 'EN' : '中文'}
           </button>
@@ -80,13 +109,30 @@ export default function App() {
       <main className="page-main">
         <div className="doc-card">
           <Tessera
-            key={`${locale}-${aiSource}`}
+            key={`${locale}-${aiSource}-${hostMode}`}
             locale={locale}
-            content={initialDoc}
+            content={hostContent}
+            editable={editable}
+            placeholder={specflow ? '从需求背景与目标写起…' : undefined}
+            excludeBlocks={specflow ? SPECFLOW_EXCLUDED : undefined}
             upload={mockUpload}
-            comments={comments}
+            comments={specflow ? undefined : comments}
             identity={demoIdentity}
             ai={runtime}
+            extraSelectionItems={({ editor }) => (
+              <button
+                type="button"
+                className="tessera-tb-btn tessera-tb-host"
+                title="让 AI 改写此段"
+                onClick={() => {
+                  const { from, to } = editor.state.selection
+                  const selected = editor.state.doc.textBetween(from, to, ' ').trim()
+                  setHostMsg(selected ? `宿主收到选区：${selected}` : '请先选中一段文字')
+                }}
+              >
+                ✦
+              </button>
+            )}
             onUpdate={editor => setDocSize(JSON.stringify(editor.getJSON()).length)}
             onCreate={editor => {
               editorRef = editor
@@ -107,6 +153,17 @@ export default function App() {
             <li>AI 产物紫色待审标记，审阅条 接受/拒绝（显式回滚）</li>
             <li>中文 IME 组合态安全（触发符不误发、UI 不闪烁）</li>
           </ul>
+          <section className="host-config-panel">
+            <h3>宿主配置面 0.2.0</h3>
+            <p className="host-mode-badge">当前：{specflow ? 'SpecFlow 白名单' : '完整能力'}</p>
+            <ul>
+              <li><code>editable</code>：{editable ? '可编辑' : '只读渲染'}</li>
+              <li><code>placeholder</code>：{specflow ? '从需求背景与目标写起…' : '内置 locale 文案'}</li>
+              <li><code>excludeBlocks</code>：{specflow ? '裁剪 5 类非白名单块' : '不裁剪'}</li>
+              <li><code>extraSelectionItems</code>：选区工具栏中的 ✦ 按钮</li>
+            </ul>
+            {hostMsg ? <p className="host-message">{hostMsg}</p> : null}
+          </section>
           <div className="md-tools">
             <button type="button" onClick={() => setMdDrawer('import')}>
               导入 Markdown

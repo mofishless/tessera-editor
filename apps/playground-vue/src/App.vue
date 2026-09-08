@@ -10,6 +10,7 @@ import { initialDoc } from './doc'
 
 const locale = ref<TesseraLocale>('zh-CN')
 const aiSource = ref<'mock' | 'off'>('mock')
+const editable = ref(true)
 const editorRef = shallowRef<Editor | null>(null)
 const docSize = ref(0)
 
@@ -45,10 +46,14 @@ function onEditorCreate(ed: import('@tiptap/core').Editor) {
         <span class="logo-name">Tessera</span>
       </div>
       <div class="sub">Vue 3 绑定 · TipTap 3.31 · 与 React 绑定共用 @tessera-editor/core</div>
-      <div class="header-actions">
-        <button type="button" @click="locale = locale === 'zh-CN' ? 'en-US' : 'zh-CN'">
-          {{ locale === 'zh-CN' ? 'EN' : '中文' }}
-        </button>
+        <div class="header-actions">
+          <label class="toggle-control">
+            <input v-model="editable" type="checkbox" />
+            可编辑
+          </label>
+          <button type="button" @click="locale = locale === 'zh-CN' ? 'en-US' : 'zh-CN'">
+            {{ locale === 'zh-CN' ? 'EN' : '中文' }}
+          </button>
         <select v-model="aiSource">
           <option value="mock">AI: mock</option>
           <option value="off">AI: 关闭</option>
@@ -62,6 +67,7 @@ function onEditorCreate(ed: import('@tiptap/core').Editor) {
           :key="`${locale}-${aiSource}`"
           :locale="locale"
           :content="initialDoc"
+          :editable="editable"
           :upload="mockUpload"
           :comments="comments"
           :identity="demoIdentity"
